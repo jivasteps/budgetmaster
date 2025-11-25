@@ -244,10 +244,14 @@
                 </button>
             </div>
 
-            <nav class="flex-1 px-4 py-4 space-y-2">
+            <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
                 <a href="#" onclick="showPage('dashboard')" id="nav-dashboard"
                     class="nav-item flex items-center gap-3 px-4 py-3 bg-blue-600 rounded-xl text-white transition-colors">
                     <i class="fa-solid fa-chart-pie w-5"></i> <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" onclick="showPage('networth')" id="nav-networth"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-scale-balanced w-5"></i> <span class="font-medium">Net Worth</span>
                 </a>
                 <a href="#" onclick="showPage('transactions')" id="nav-transactions"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
@@ -256,6 +260,10 @@
                 <a href="#" onclick="showPage('calendar')" id="nav-calendar"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-calendar-days w-5"></i> <span class="font-medium">Calendar</span>
+                </a>
+                <a href="#" onclick="showPage('shopping')" id="nav-shopping"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-cart-shopping w-5"></i> <span class="font-medium">Shopping List</span>
                 </a>
                 <a href="#" onclick="showPage('recurring')" id="nav-recurring"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
@@ -475,6 +483,120 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Net Worth View (NEW) -->
+                <div id="view-networth" class="hidden max-w-7xl mx-auto">
+                    <div
+                        class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl shadow-xl p-8 text-white mb-8 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 p-8 opacity-10"><i
+                                class="fa-solid fa-scale-balanced text-9xl"></i></div>
+                        <p class="text-sm font-medium text-slate-400 uppercase tracking-wide mb-1">Total Net Worth</p>
+                        <h2 class="text-5xl font-bold mb-6" id="nwTotal">₹0.00</h2>
+
+                        <div class="grid grid-cols-2 gap-6 pt-6 border-t border-slate-700/50">
+                            <div>
+                                <p class="text-sm text-emerald-400 mb-1"><i class="fa-solid fa-arrow-trend-up"></i>
+                                    Total Assets</p>
+                                <p class="text-2xl font-bold" id="nwAssets">₹0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-rose-400 mb-1"><i class="fa-solid fa-arrow-trend-down"></i> Total
+                                    Liabilities</p>
+                                <p class="text-2xl font-bold" id="nwLiabilities">₹0.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Breakdown</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-wallet"></i></div>
+                                <span
+                                    class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded">Asset</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Cash Balance</p>
+                            <h4 class="text-xl font-bold text-gray-800 dark:text-white" id="nwCash">₹0.00</h4>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-chart-line"></i></div>
+                                <span
+                                    class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded">Asset</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Investments</p>
+                            <h4 class="text-xl font-bold text-gray-800 dark:text-white" id="nwInvest">₹0.00</h4>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-bullseye"></i></div>
+                                <span
+                                    class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded">Asset</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Savings Goals</p>
+                            <h4 class="text-xl font-bold text-gray-800 dark:text-white" id="nwSavings">₹0.00</h4>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i></div>
+                                <span
+                                    class="text-xs font-bold bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 px-2 py-1 rounded">Liability</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Debt Outstanding</p>
+                            <h4 class="text-xl font-bold text-gray-800 dark:text-white" id="nwDebt">₹0.00</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shopping List View (NEW) -->
+                <div id="view-shopping" class="hidden max-w-4xl mx-auto">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div
+                            class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white"><i
+                                    class="fa-solid fa-cart-shopping mr-2"></i> Shopping List</h3>
+                            <button onclick="checkoutShoppingList()"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                Checkout Selected (<span id="shoppingTotal">₹0</span>)
+                            </button>
+                        </div>
+                        <div class="p-6 bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-700">
+                            <form id="shoppingForm" class="flex gap-2">
+                                <input type="text" id="shopItem" placeholder="Item name (e.g., Milk)"
+                                    class="flex-1 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required>
+                                <div class="relative w-32">
+                                    <span
+                                        class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+                                    <input type="number" step="0.01" id="shopCost" placeholder="Est. Cost"
+                                        class="w-full pl-7 pr-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <button type="submit"
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"><i
+                                        class="fa-solid fa-plus"></i></button>
+                            </form>
+                        </div>
+                        <div id="shoppingList" class="divide-y divide-gray-100 dark:divide-slate-700">
+                            <!-- Items injected here -->
+                        </div>
+                        <div id="emptyShopping" class="hidden py-12 text-center text-gray-400">
+                            <p>List is empty.</p>
                         </div>
                     </div>
                 </div>
@@ -1110,6 +1232,7 @@
         let goals = [];
         let debts = [];
         let recurringItems = [];
+        let shoppingItems = []; // New
         let wallets = [];
         let categories = { expense: [], income: [], investment: [] };
         let categoryMap = {};
@@ -1206,6 +1329,7 @@
                     setupGoalsListener();
                     setupRecurringListener();
                     setupDebtsListener();
+                    setupShoppingListener(); // New
                     loadBudget();
                 } else {
                     document.getElementById('view-landing').classList.remove('hidden');
@@ -1327,7 +1451,8 @@
                 wallets: wallets,
                 goals: goals,
                 debts: debts,
-                recurring: recurringItems
+                recurring: recurringItems,
+                shopping: shoppingItems
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1363,7 +1488,8 @@
                             importColl('wallets', data.wallets),
                             importColl('goals', data.goals),
                             importColl('debts', data.debts),
-                            importColl('recurring', data.recurring)
+                            importColl('recurring', data.recurring),
+                            importColl('shopping', data.shopping)
                         ]);
 
                         alert("Import Complete! Reloading...");
@@ -1454,13 +1580,14 @@
             try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat); closeCategoryModal(); } catch (err) { alert("Error"); }
         });
 
-        // --- DEBTS (NEW) ---
+        // --- DEBTS ---
         function setupDebtsListener() {
             db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts')
                 .onSnapshot(snap => {
                     debts = [];
                     snap.forEach(doc => debts.push({ id: doc.id, ...doc.data() }));
                     renderDebts();
+                    calculateNetWorth(); // Update net worth when debts change
                 });
         }
         function renderDebts() {
@@ -1525,6 +1652,98 @@
         });
         window.deleteDebt = async (id) => { if (confirm("Delete record?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
         window.settleDebt = async (id) => { if (confirm("Mark as settled?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
+
+        // --- SHOPPING (NEW) ---
+        function setupShoppingListener() {
+            db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping')
+                .onSnapshot(snap => {
+                    shoppingItems = [];
+                    snap.forEach(doc => shoppingItems.push({ id: doc.id, ...doc.data() }));
+                    renderShoppingList();
+                });
+        }
+
+        function renderShoppingList() {
+            const list = document.getElementById('shoppingList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            let total = 0;
+            let checkedTotal = 0;
+
+            if (shoppingItems.length === 0) {
+                document.getElementById('emptyShopping').classList.remove('hidden');
+            } else {
+                document.getElementById('emptyShopping').classList.add('hidden');
+
+                shoppingItems.forEach(item => {
+                    total += item.cost;
+                    if (item.checked) checkedTotal += item.cost;
+
+                    const checkState = item.checked ? 'checked' : '';
+                    const strikeClass = item.checked ? 'line-through text-gray-400' : 'text-gray-800 dark:text-white';
+
+                    list.innerHTML += `
+                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" ${checkState} onchange="toggleShoppingItem('${item.id}', this.checked)" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                <span class="${strikeClass}">${item.name}</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="font-mono text-sm text-gray-600 dark:text-gray-300">${formatCurrency(item.cost)}</span>
+                                <button onclick="deleteShoppingItem('${item.id}')" class="text-gray-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('shoppingTotal').textContent = formatCurrency(checkedTotal);
+        }
+
+        document.getElementById('shoppingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('shopItem').value,
+                cost: parseFloat(document.getElementById('shopCost').value) || 0,
+                checked: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').add(data);
+                document.getElementById('shopItem').value = '';
+                document.getElementById('shopCost').value = '';
+            } catch (e) { alert("Error"); }
+        });
+
+        window.toggleShoppingItem = async (id, checked) => {
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').doc(id).update({ checked });
+        };
+
+        window.deleteShoppingItem = async (id) => {
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').doc(id).delete();
+        };
+
+        window.checkoutShoppingList = async () => {
+            const checkedItems = shoppingItems.filter(i => i.checked);
+            if (checkedItems.length === 0) return alert("No items selected!");
+
+            const totalCost = checkedItems.reduce((sum, i) => sum + i.cost, 0);
+            const itemsDesc = "Shopping: " + checkedItems.map(i => i.name).join(", ");
+
+            openModal();
+            setType('expense');
+            document.getElementById('amount').value = totalCost;
+            document.getElementById('note').value = itemsDesc;
+            // Note: We leave it to the user to save the transaction. After save, they can clear the list manually or we could automate it.
+            // For now, let's auto-delete the checked items from the list only AFTER the user successfully saves the transaction.
+            // To do this cleanly without complex state, we'll just attach a one-time listener or let the user delete. 
+            // Simpler: Just let the user delete them, or offer a "Clear Checked" button.
+            // Actually, let's just auto-delete them right now for convenience assuming they will save.
+            if (confirm("Create transaction for " + formatCurrency(totalCost) + " and remove items from list?")) {
+                checkedItems.forEach(item => deleteShoppingItem(item.id));
+            }
+        };
+
 
         // --- RECURRING ---
         function setupRecurringListener() {
@@ -1695,6 +1914,7 @@
                 goals = [];
                 snapshot.forEach(doc => goals.push({ id: doc.id, ...doc.data() }));
                 renderGoals();
+                calculateNetWorth(); // Update net worth when goals change
             });
         }
 
@@ -1743,6 +1963,46 @@
             const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
             const recentSpent = transactions.filter(t => t.type === 'expense' && new Date(t.date) >= cutoff).reduce((a, b) => a + Number(b.amount), 0);
             document.getElementById('insightDailyAvg').textContent = formatCurrency(recentSpent / 30);
+        }
+
+        // NEW: Net Worth Calculation
+        function calculateNetWorth() {
+            let cash = 0;
+            let invested = 0;
+            let savings = 0;
+            let debt = 0;
+
+            // 1. Cash Balance & Investments from transactions
+            transactions.forEach(t => {
+                const amt = Number(t.amount);
+                if (t.type === 'income') cash += amt;
+                else if (t.type === 'expense') cash -= amt;
+                else if (t.type === 'investment') {
+                    cash -= amt;     // Money leaves cash wallet
+                    invested += amt; // But is added to investment asset
+                }
+            });
+
+            // 2. Savings from Goals
+            goals.forEach(g => savings += Number(g.saved));
+
+            // 3. Debts
+            debts.forEach(d => {
+                if (d.type === 'borrowed') debt += Number(d.amount);
+                // Note: 'lent' could be treated as asset, but for simplicity we track 'borrowed' as liability
+            });
+
+            const assets = cash + invested + savings; // + lent (if added)
+            const netWorth = assets - debt;
+
+            document.getElementById('nwTotal').textContent = formatCurrency(netWorth);
+            document.getElementById('nwAssets').textContent = formatCurrency(assets);
+            document.getElementById('nwLiabilities').textContent = formatCurrency(debt);
+
+            document.getElementById('nwCash').textContent = formatCurrency(cash);
+            document.getElementById('nwInvest').textContent = formatCurrency(invested);
+            document.getElementById('nwSavings').textContent = formatCurrency(savings);
+            document.getElementById('nwDebt').textContent = formatCurrency(debt);
         }
 
         // NEW: Category Budget Calculation
@@ -1813,7 +2073,7 @@
         }
 
         function updateUI() {
-            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets();
+            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth();
         }
         function renderSummary() {
             let inc = 0, exp = 0, inv = 0;
