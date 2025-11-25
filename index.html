@@ -265,6 +265,10 @@
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-hand-holding-dollar w-5"></i> <span class="font-medium">Debts</span>
                 </a>
+                <a href="#" onclick="showPage('tools')" id="nav-tools"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-screwdriver-wrench w-5"></i> <span class="font-medium">Tools</span>
+                </a>
                 <a href="#" onclick="showPage('goals')" id="nav-goals"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-bullseye w-5"></i> <span class="font-medium">Savings Goals</span>
@@ -388,7 +392,7 @@
                         </div>
                     </div>
 
-                    <!-- Category Budgets Section (NEW) -->
+                    <!-- Category Budgets Section -->
                     <div id="categoryBudgetsSection"
                         class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                         <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Category Budgets</h3>
@@ -442,6 +446,12 @@
                             </div>
                         </div>
                         <div class="lg:col-span-2 space-y-6">
+                            <!-- Comparison Chart (NEW) -->
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Monthly Comparison</h3>
+                                <div class="w-full h-64"><canvas id="comparisonChart"></canvas></div>
+                            </div>
                             <div
                                 class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Spending Trend (Last 7
@@ -494,6 +504,11 @@
                                         <select id="filterWallet"
                                             class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <option value="all">All Wallets</option>
+                                        </select>
+                                        <!-- New Tag Filter -->
+                                        <select id="filterTag"
+                                            class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">All Tags</option>
                                         </select>
                                     </div>
                                 </div>
@@ -607,7 +622,7 @@
                     </div>
                 </div>
 
-                <!-- Debts View (NEW) -->
+                <!-- Debts View -->
                 <div id="view-debts" class="hidden max-w-7xl mx-auto">
                     <div id="debtsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                     <div id="emptyDebts" class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
@@ -621,7 +636,56 @@
                     </div>
                 </div>
 
-                <!-- Settings View (NEW) -->
+                <!-- Tools View -->
+                <div id="view-tools" class="hidden max-w-3xl mx-auto">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-utensils"></i> Split Bill Calculator
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total
+                                        Bill</label>
+                                    <input type="number" id="splitTotal"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">People</label>
+                                    <input type="number" id="splitPeople" value="2"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tip
+                                        %</label>
+                                    <input type="number" id="splitTip" value="0"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <button onclick="calculateSplit()"
+                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg">Calculate</button>
+
+                            <div id="splitResult"
+                                class="hidden mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 text-center">
+                                <p class="text-sm text-indigo-500 dark:text-indigo-300 uppercase font-bold mb-1">Per
+                                    Person</p>
+                                <h3 class="text-3xl font-bold text-indigo-700 dark:text-indigo-200 mb-4"
+                                    id="splitPerPerson">₹0.00</h3>
+                                <button onclick="logSplitShare()"
+                                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Log
+                                    My Share</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
                 <div id="view-settings" class="hidden max-w-3xl mx-auto">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -970,7 +1034,7 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').classList.remove('hidden'); });
         document.getElementById('installBtn').addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); } });
 
-       // FIREBASE SETUP
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBSU62EbaZWvRQzhf9nc5hY7-MYhm4Kqyo",
             authDomain: "budgetmaster-d0cbd.firebaseapp.com",
@@ -997,6 +1061,7 @@
         let monthlyBudget = 0;
         let expenseChart = null;
         let trendChart = null;
+        let comparisonChart = null;
         let currentCalendarDate = new Date();
         let userPin = null;
         let pinInput = "";
@@ -1446,18 +1511,38 @@
             else { customDiv.classList.add('hidden'); renderFullList(); }
         }
 
-        document.getElementById('startDate').addEventListener('change', renderFullList);
-        document.getElementById('endDate').addEventListener('change', renderFullList);
-        document.getElementById('filterWallet').addEventListener('change', renderFullList);
-
         function setupRealtimeListener() {
             const collectionRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses');
             collectionRef.onSnapshot((snapshot) => {
                 transactions = [];
                 snapshot.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
                 transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                updateTagFilter();
                 updateUI();
             });
+        }
+
+        function updateTagFilter() {
+            const tags = new Set();
+            transactions.forEach(t => {
+                const note = t.note || "";
+                const matches = note.match(/#\w+/g);
+                if (matches) matches.forEach(tag => tags.add(tag));
+            });
+
+            const select = document.getElementById('filterTag');
+            if (!select) return; // Ensure filterTag exists
+            const current = select.value;
+            select.innerHTML = '<option value="all">All Tags</option>';
+
+            tags.forEach(tag => {
+                const opt = document.createElement('option');
+                opt.value = tag;
+                opt.textContent = tag;
+                select.appendChild(opt);
+            });
+
+            select.value = current;
         }
 
         function setupGoalsListener() {
@@ -1557,8 +1642,34 @@
             });
         }
 
+        // SPLIT BILL
+        function calculateSplit() {
+            const total = parseFloat(document.getElementById('splitTotal').value) || 0;
+            const people = parseInt(document.getElementById('splitPeople').value) || 1;
+            const tip = parseFloat(document.getElementById('splitTip').value) || 0;
+
+            if (total <= 0 || people < 1) return;
+
+            const totalWithTip = total + (total * (tip / 100));
+            const share = totalWithTip / people;
+
+            document.getElementById('splitPerPerson').textContent = formatCurrency(share);
+            document.getElementById('splitResult').classList.remove('hidden');
+
+            // Store for logging
+            window.currentShare = share;
+        }
+
+        function logSplitShare() {
+            if (!window.currentShare) return;
+            openModal();
+            setType('expense');
+            document.getElementById('amount').value = window.currentShare.toFixed(2);
+            document.getElementById('note').value = "My share of split bill";
+        }
+
         function updateUI() {
-            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets();
+            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets();
         }
         function renderSummary() {
             let inc = 0, exp = 0, inv = 0;
@@ -1578,6 +1689,7 @@
             const type = document.getElementById('filterType').value;
             const wallet = document.getElementById('filterWallet').value;
             const dateFilter = document.getElementById('filterDate').value;
+            const tagFilter = document.getElementById('filterTag').value;
             const search = document.getElementById('searchInput').value.toLowerCase();
 
             // Date Range Logic
@@ -1604,7 +1716,10 @@
 
                 const catName = categoryMap[t.category]?.name || '';
                 const matchSearch = t.note.toLowerCase().includes(search) || catName.toLowerCase().includes(search);
-                return matchType && matchWallet && matchDate && matchSearch;
+
+                const matchTag = tagFilter === 'all' || (t.note && t.note.includes(tagFilter));
+
+                return matchType && matchWallet && matchDate && matchSearch && matchTag;
             });
 
             if (filtered.length === 0) document.getElementById('emptyState').classList.remove('hidden');
@@ -1708,6 +1823,57 @@
             });
         }
 
+        // Comparison Chart Logic
+        function renderComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const currentYear = now.getFullYear();
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+            const currentMonthTotal = transactions
+                .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === currentMonth && new Date(t.date).getFullYear() === currentYear)
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+
+            const lastMonthTotal = transactions
+                .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === lastMonth && new Date(t.date).getFullYear() === lastMonthYear)
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+
+            if (comparisonChart) comparisonChart.destroy();
+
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Last Month', 'This Month'],
+                    datasets: [{
+                        label: 'Spending',
+                        data: [lastMonthTotal, currentMonthTotal],
+                        backgroundColor: ['#94a3b8', '#3b82f6'],
+                        borderRadius: 6,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: isDark ? '#334155' : '#e2e8f0', borderDash: [2, 4] },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+
         function createTransactionRowHTML(t, isCompact) {
             const cat = categoryMap[t.category] || { name: 'Unknown', icon: 'fa-question', color: '#ccc' };
             const wallet = walletMap[t.walletId] || { name: '-' };
@@ -1730,14 +1896,18 @@
             }
 
             const dateDisplay = formatDate(t.date);
+            // Extract tags for display
+            const noteText = t.note || 'No note';
+            const noteDisplay = noteText.replace(/(#\w+)/g, '<span class="text-blue-500 dark:text-blue-400 font-medium">$1</span>');
+
             if (isCompact) {
-                return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${cat.name}</p><p class="text-xs text-gray-400 truncate">${t.note || 'No note'}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color}">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
+                return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${cat.name}</p><p class="text-xs text-gray-400 truncate">${noteDisplay}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color}">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
             } else {
                 return `<tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700 group border-b border-gray-50 dark:border-slate-800 last:border-0">
                     <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-xs"><i class="fa-solid ${cat.icon}"></i></div><span class="font-medium text-gray-700 dark:text-gray-300">${cat.name}</span></div></td>
                     <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">${dateDisplay}</td>
                     <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs font-medium">${wallet.name}</td>
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${t.note}">${t.note || '-'}</td>
+                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${t.note}">${noteDisplay}</td>
                     <td class="px-6 py-4 text-right font-mono font-medium ${color}">${sign}${formatCurrency(t.amount)}</td>
                     <td class="px-6 py-4 text-center"><div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editTransaction('${t.id}')" class="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg"><i class="fa-solid fa-trash"></i></button></div></td>
                 </tr>`;
@@ -1870,9 +2040,20 @@
         });
         window.deleteTransaction = async (id) => { if (!confirm("Delete?")) return; try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses').doc(id).delete(); } catch (e) { alert("Failed"); } };
 
-        document.getElementById('searchInput').addEventListener('input', renderFullList);
-        document.getElementById('filterType').addEventListener('change', renderFullList);
-        document.getElementById('filterDate').addEventListener('change', renderFullList);
+        // SAFE LISTENER HELPER
+        function addListener(id, event, handler) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(event, handler);
+            else console.warn('Element not found:', id);
+        }
+
+        addListener('searchInput', 'input', renderFullList);
+        addListener('filterType', 'change', renderFullList);
+        addListener('filterDate', 'change', renderFullList);
+        addListener('filterWallet', 'change', renderFullList);
+        addListener('filterTag', 'change', renderFullList);
+        addListener('startDate', 'change', renderFullList);
+        addListener('endDate', 'change', renderFullList);
 
         initApp();
     </script>
