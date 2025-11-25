@@ -327,28 +327,41 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Summary Cards (Updated Grid) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Balance -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
                                     class="fa-solid fa-scale-balanced text-6xl text-blue-600 dark:text-blue-400"></i>
                             </div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Balance</p>
-                            <h3 class="text-3xl font-bold text-gray-800 dark:text-white" id="totalBalance">₹0.00</h3>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalBalance">₹0.00</h3>
                         </div>
+                        <!-- Income -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
                                     class="fa-solid fa-arrow-trend-up text-6xl text-emerald-500"></i></div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Income</p>
-                            <h3 class="text-3xl font-bold text-emerald-600" id="totalIncome">₹0.00</h3>
+                            <h3 class="text-2xl font-bold text-emerald-600" id="totalIncome">₹0.00</h3>
                         </div>
+                        <!-- Expenses -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
                                     class="fa-solid fa-arrow-trend-down text-6xl text-rose-500"></i></div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Expenses</p>
-                            <h3 class="text-3xl font-bold text-rose-600" id="totalExpense">₹0.00</h3>
+                            <h3 class="text-2xl font-bold text-rose-600" id="totalExpense">₹0.00</h3>
+                        </div>
+                        <!-- Investments (NEW) -->
+                        <div
+                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
+                            <div class="absolute right-0 top-0 p-6 opacity-10"><i
+                                    class="fa-solid fa-piggy-bank text-6xl text-purple-500"></i></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Invested</p>
+                            <h3 class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="totalInvestment">
+                                ₹0.00</h3>
                         </div>
                     </div>
 
@@ -409,6 +422,7 @@
                                             <option value="all">All Types</option>
                                             <option value="income">Income</option>
                                             <option value="expense">Expense</option>
+                                            <option value="investment">Investment</option> <!-- NEW -->
                                         </select>
                                         <select id="filterWallet"
                                             class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -544,11 +558,13 @@
                 </div>
                 <form id="transactionForm" class="p-6 space-y-4">
                     <input type="hidden" id="editId">
-                    <div class="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-slate-700 p-1 rounded-xl">
+                    <div class="grid grid-cols-3 gap-2 bg-gray-100 dark:bg-slate-700 p-1 rounded-xl">
                         <button type="button" onclick="setType('expense')" id="btn-expense"
                             class="py-2 rounded-lg text-sm font-medium transition-all shadow-sm bg-white dark:bg-slate-600 text-rose-600 dark:text-rose-400">Expense</button>
                         <button type="button" onclick="setType('income')" id="btn-income"
                             class="py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">Income</button>
+                        <button type="button" onclick="setType('investment')" id="btn-investment"
+                            class="py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">SIP/Inv.</button>
                     </div>
                     <input type="hidden" id="type" value="expense">
 
@@ -778,6 +794,7 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').classList.remove('hidden'); });
         document.getElementById('installBtn').addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); } });
 
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBSU62EbaZWvRQzhf9nc5hY7-MYhm4Kqyo",
             authDomain: "budgetmaster-d0cbd.firebaseapp.com",
@@ -797,7 +814,7 @@
         let goals = [];
         let recurringItems = [];
         let wallets = [];
-        let categories = { expense: [], income: [] };
+        let categories = { expense: [], income: [], investment: [] };
         let categoryMap = {};
         let walletMap = {};
         let monthlyBudget = 0;
@@ -817,7 +834,12 @@
             { id: 'freelance', type: 'income', name: 'Freelance', icon: 'fa-laptop-code', color: '#3b82f6' },
             { id: 'investments', type: 'income', name: 'Investments', icon: 'fa-chart-line', color: '#8b5cf6' },
             { id: 'gift', type: 'income', name: 'Gifts', icon: 'fa-gift', color: '#ec4899' },
-            { id: 'other_income', type: 'income', name: 'Other Income', icon: 'fa-plus-circle', color: '#64748b' }
+            { id: 'other_income', type: 'income', name: 'Other Income', icon: 'fa-plus-circle', color: '#64748b' },
+            { id: 'sip', type: 'investment', name: 'SIP', icon: 'fa-chart-simple', color: '#8b5cf6' },
+            { id: 'mutual_fund', type: 'investment', name: 'Mutual Funds', icon: 'fa-money-bill-trend-up', color: '#6366f1' },
+            { id: 'stocks', type: 'investment', name: 'Stocks', icon: 'fa-arrow-trend-up', color: '#a855f7' },
+            { id: 'gold', type: 'investment', name: 'Gold', icon: 'fa-coins', color: '#eab308' },
+            { id: 'ppf', type: 'investment', name: 'PPF/EPF', icon: 'fa-piggy-bank', color: '#ec4899' }
         ];
 
         const defaultWallets = [
@@ -908,11 +930,10 @@
             const catsRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories');
             catsRef.onSnapshot(async (snapshot) => {
                 if (snapshot.empty) { await seedDefaultCategories(catsRef); return; }
-                categories = { expense: [], income: [] }; categoryMap = {};
+                categories = { expense: [], income: [], investment: [] }; categoryMap = {};
                 snapshot.forEach(doc => {
                     const data = { id: doc.id, ...doc.data() };
-                    if (data.type === 'expense') categories.expense.push(data);
-                    else if (data.type === 'income') categories.income.push(data);
+                    if (categories[data.type]) categories[data.type].push(data);
                     categoryMap[data.id] = data;
                 });
                 updateCategoryOptions(); updateRecCategoryOptions(); updateUI();
@@ -1158,10 +1179,17 @@
             renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights(); renderCalendar();
         }
         function renderSummary() {
-            let inc = 0, exp = 0; transactions.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
+            let inc = 0, exp = 0, inv = 0;
+            transactions.forEach(t => {
+                const amt = Number(t.amount);
+                if (t.type === 'income') inc += amt;
+                else if (t.type === 'expense') exp += amt;
+                else if (t.type === 'investment') inv += amt;
+            });
             document.getElementById('totalIncome').textContent = formatCurrency(inc);
             document.getElementById('totalExpense').textContent = formatCurrency(exp);
-            document.getElementById('totalBalance').textContent = formatCurrency(inc - exp);
+            document.getElementById('totalInvestment').textContent = formatCurrency(inv);
+            document.getElementById('totalBalance').textContent = formatCurrency(inc - exp - inv);
         }
         function renderFullList() {
             const list = document.getElementById('fullTransactionList'); list.innerHTML = '';
@@ -1302,9 +1330,23 @@
             const cat = categoryMap[t.category] || { name: 'Unknown', icon: 'fa-question', color: '#ccc' };
             const wallet = walletMap[t.walletId] || { name: '-' };
             const isInc = t.type === 'income';
-            const color = isInc ? 'text-emerald-600' : 'text-gray-800 dark:text-white';
-            const bg = isInc ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400';
-            const sign = isInc ? '+' : '-';
+            const isInv = t.type === 'investment';
+
+            let color, bg, sign;
+            if (isInc) {
+                color = 'text-emerald-600';
+                bg = 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
+                sign = '+';
+            } else if (isInv) {
+                color = 'text-purple-600 dark:text-purple-400';
+                bg = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
+                sign = '-';
+            } else {
+                color = 'text-gray-800 dark:text-white';
+                bg = 'bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400';
+                sign = '-';
+            }
+
             const dateDisplay = formatDate(t.date);
             if (isCompact) {
                 return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${cat.name}</p><p class="text-xs text-gray-400 truncate">${t.note || 'No note'}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color}">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
@@ -1395,13 +1437,22 @@
 
         function setType(type) {
             document.getElementById('type').value = type;
-            const bE = document.getElementById('btn-expense'), bI = document.getElementById('btn-income');
+            const bE = document.getElementById('btn-expense');
+            const bI = document.getElementById('btn-income');
+            const bInv = document.getElementById('btn-investment');
+
+            // Reset classes
+            const inactiveClass = "py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700";
+            bE.className = inactiveClass;
+            bI.className = inactiveClass;
+            bInv.className = inactiveClass;
+
             if (type === 'expense') {
                 bE.className = "py-2 rounded-lg text-sm font-medium shadow-sm bg-white dark:bg-slate-600 text-rose-600 dark:text-rose-400 border border-gray-100 dark:border-slate-500";
-                bI.className = "py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700";
-            } else {
-                bE.className = "py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700";
+            } else if (type === 'income') {
                 bI.className = "py-2 rounded-lg text-sm font-medium shadow-sm bg-white dark:bg-slate-600 text-emerald-600 dark:text-emerald-400 border border-gray-100 dark:border-slate-500";
+            } else if (type === 'investment') {
+                bInv.className = "py-2 rounded-lg text-sm font-medium shadow-sm bg-white dark:bg-slate-600 text-purple-600 dark:text-purple-400 border border-gray-100 dark:border-slate-500";
             }
             updateCategoryOptions();
         }
