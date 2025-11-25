@@ -686,11 +686,61 @@
                 </div>
 
                 <!-- Settings View -->
-                <div id="view-settings" class="hidden max-w-3xl mx-auto">
+                <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6">
+                    <!-- General Settings -->
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                         <div class="p-6 border-b border-gray-100 dark:border-slate-700">
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Security Settings</h3>
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">General Preferences</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">Currency Symbol</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Select your preferred currency
+                                        display.</p>
+                                </div>
+                                <select id="currencySelect" onchange="saveCurrency()"
+                                    class="px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                                    <option value="INR">₹ (INR)</option>
+                                    <option value="USD">$ (USD)</option>
+                                    <option value="EUR">€ (EUR)</option>
+                                    <option value="GBP">£ (GBP)</option>
+                                    <option value="JPY">¥ (JPY)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Data Management</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="exportDataJSON()"
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium flex-1">
+                                    <i class="fa-solid fa-download"></i> Backup Data (JSON)
+                                </button>
+                                <label
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors text-sm font-medium cursor-pointer flex-1">
+                                    <i class="fa-solid fa-upload"></i> Restore Data
+                                    <input type="file" id="importFile" accept=".json" class="hidden"
+                                        onchange="importDataJSON(this)">
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-3 text-center">Restoring data will merge new entries with
+                                your existing data.</p>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Security</h3>
                         </div>
                         <div class="p-6">
                             <div class="flex items-center justify-between">
@@ -757,7 +807,8 @@
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <span
+                                class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                             <input type="number" step="0.01" id="amount" required
                                 class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="0.00">
@@ -892,7 +943,8 @@
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Monthly Limit
                             (Optional)</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <span
+                                class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                             <input type="number" id="catBudget"
                                 class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="0.00">
@@ -913,7 +965,8 @@
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Set Monthly Budget</h3>
                 <div class="relative mb-6">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                    <span
+                        class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                     <input type="number" id="budgetInput"
                         class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white outline-none"
                         placeholder="e.g. 50000">
@@ -952,7 +1005,8 @@
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Target
                             Amount</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <span
+                                class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                             <input type="number" step="0.01" id="goalTarget" required
                                 class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="0.00">
@@ -962,7 +1016,8 @@
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Saved
                             Amount</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <span
+                                class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                             <input type="number" step="0.01" id="goalSaved" required
                                 class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="0.00">
@@ -1007,7 +1062,8 @@
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <span
+                                class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                             <input type="number" step="0.01" id="debtAmount" required
                                 class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white outline-none">
                         </div>
@@ -1034,7 +1090,7 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').classList.remove('hidden'); });
         document.getElementById('installBtn').addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); } });
 
-        // FIREBASE SETUP
+       // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBSU62EbaZWvRQzhf9nc5hY7-MYhm4Kqyo",
             authDomain: "budgetmaster-d0cbd.firebaseapp.com",
@@ -1065,6 +1121,7 @@
         let currentCalendarDate = new Date();
         let userPin = null;
         let pinInput = "";
+        let currentCurrency = 'INR'; // Default
 
         const defaultCategoriesList = [
             { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -1120,7 +1177,7 @@
                     document.getElementById('view-landing').classList.add('hidden');
                     document.getElementById('app-layout').classList.remove('hidden');
 
-                    // Check Security
+                    // Check Security & Settings
                     db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('security')
                         .onSnapshot(doc => {
                             if (doc.exists) {
@@ -1130,6 +1187,16 @@
                                 } else {
                                     updatePinUI();
                                 }
+                            }
+                        });
+
+                    // Load Currency Setting
+                    db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('general')
+                        .onSnapshot(doc => {
+                            if (doc.exists && doc.data().currency) {
+                                currentCurrency = doc.data().currency;
+                                document.getElementById('currencySelect').value = currentCurrency;
+                                updateUI();
                             }
                         });
 
@@ -1235,6 +1302,78 @@
             updateUI();
         }
 
+        // --- CURRENCY & DATA MGMT ---
+        function formatCurrency(num) {
+            const symbolMap = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' };
+            const symbol = symbolMap[currentCurrency] || '₹';
+            const locale = currentCurrency === 'INR' ? 'en-IN' : 'en-US';
+            return new Intl.NumberFormat(locale, { style: 'currency', currency: currentCurrency }).format(num).replace(/[A-Z]{3}/, symbol).trim();
+        }
+
+        async function saveCurrency() {
+            const val = document.getElementById('currencySelect').value;
+            currentCurrency = val;
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('general').set({ currency: val }, { merge: true });
+            updateUI();
+
+            // Update Symbols in Modals
+            document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' }[val]);
+        }
+
+        async function exportDataJSON() {
+            const data = {
+                expenses: transactions,
+                categories: Object.values(categoryMap),
+                wallets: wallets,
+                goals: goals,
+                debts: debts,
+                recurring: recurringItems
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `expenseflow_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importDataJSON(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm("This will import data into your account. Continue?")) {
+                        const importColl = async (collName, items) => {
+                            if (!items) return;
+                            const batch = db.batch();
+                            let count = 0;
+                            for (const item of items) {
+                                const docRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection(collName).doc(item.id || db.collection('temp').doc().id);
+                                const { id, ...docData } = item;
+                                batch.set(docRef, docData, { merge: true });
+                                count++;
+                                if (count >= 400) { await batch.commit(); count = 0; }
+                            }
+                            if (count > 0) await batch.commit();
+                        };
+
+                        await Promise.all([
+                            importColl('expenses', data.expenses),
+                            importColl('categories', data.categories),
+                            importColl('wallets', data.wallets),
+                            importColl('goals', data.goals),
+                            importColl('debts', data.debts),
+                            importColl('recurring', data.recurring)
+                        ]);
+
+                        alert("Import Complete! Reloading...");
+                        window.location.reload();
+                    }
+                } catch (err) { console.error(err); alert("Invalid JSON file"); }
+            };
+            reader.readAsText(file);
+        }
+
         // --- WALLETS ---
         function setupWalletsListener() {
             const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('wallets');
@@ -1251,11 +1390,11 @@
             await batch.commit();
         }
         function updateWalletOptions() {
-            const sel = document.getElementById('txnWallet'); sel.innerHTML = '';
-            const filter = document.getElementById('filterWallet'); filter.innerHTML = '<option value="all">All Wallets</option>';
+            const sel = document.getElementById('txnWallet'); if (sel) sel.innerHTML = '';
+            const filter = document.getElementById('filterWallet'); if (filter) filter.innerHTML = '<option value="all">All Wallets</option>';
             wallets.forEach(w => {
-                sel.appendChild(new Option(w.name, w.id));
-                filter.appendChild(new Option(w.name, w.id));
+                if (sel) sel.appendChild(new Option(w.name, w.id));
+                if (filter) filter.appendChild(new Option(w.name, w.id));
             });
         }
 
@@ -1279,7 +1418,9 @@
             await batch.commit();
         }
         function updateCategoryOptions() {
-            const type = document.getElementById('type').value, sel = document.getElementById('category'); sel.innerHTML = '';
+            const type = document.getElementById('type').value, sel = document.getElementById('category');
+            if (!sel) return;
+            sel.innerHTML = '';
             const list = categories[type] || [];
             if (!list.length) { sel.innerHTML = '<option>Loading...</option>'; return; }
             const parents = list.filter(c => !c.parentId);
@@ -1323,7 +1464,8 @@
                 });
         }
         function renderDebts() {
-            const grid = document.getElementById('debtsGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('debtsGrid'); if (!grid) return;
+            grid.innerHTML = '';
             if (debts.length === 0) { document.getElementById('emptyDebts').classList.remove('hidden'); return; }
             document.getElementById('emptyDebts').classList.add('hidden');
 
@@ -1394,7 +1536,8 @@
                 });
         }
         function renderRecurring() {
-            const grid = document.getElementById('recurringGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('recurringGrid'); if (!grid) return;
+            grid.innerHTML = '';
             if (recurringItems.length === 0) { document.getElementById('emptyRecurring').classList.remove('hidden'); return; }
             document.getElementById('emptyRecurring').classList.add('hidden');
 
@@ -1430,8 +1573,8 @@
             });
         }
         function updateRecCategoryOptions() {
-            const sel = document.getElementById('recCategory'); sel.innerHTML = '';
-            categories['expense'].forEach(c => sel.appendChild(new Option(c.name, c.id)));
+            const sel = document.getElementById('recCategory'); if (sel) sel.innerHTML = '';
+            categories['expense'].forEach(c => { if (sel) sel.appendChild(new Option(c.name, c.id)) });
         }
         const recModal = document.getElementById('recurringModal');
         function openRecurringModal() { document.getElementById('recurringForm').reset(); updateRecCategoryOptions(); recModal.classList.remove('hidden'); }
@@ -1468,7 +1611,8 @@
         }
 
         function renderCalendar() {
-            const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('calendarGrid'); if (!grid) return;
+            grid.innerHTML = '';
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
 
