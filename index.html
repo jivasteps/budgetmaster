@@ -138,6 +138,17 @@
                 transform: translateY(0);
             }
         }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+        }
     </style>
 </head>
 
@@ -194,6 +205,14 @@
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-list-ul w-5"></i> <span class="font-medium">Transactions</span>
                 </a>
+                <a href="#" onclick="showPage('calendar')" id="nav-calendar"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-calendar-days w-5"></i> <span class="font-medium">Calendar</span>
+                </a>
+                <a href="#" onclick="showPage('recurring')" id="nav-recurring"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-rotate w-5"></i> <span class="font-medium">Recurring</span>
+                </a>
                 <a href="#" onclick="showPage('goals')" id="nav-goals"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-bullseye w-5"></i> <span class="font-medium">Savings Goals</span>
@@ -243,6 +262,10 @@
                     <button onclick="openGoalModal()" id="addGoalBtn"
                         class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> New Goal
+                    </button>
+                    <button onclick="openRecurringModal()" id="addRecBtn"
+                        class="hidden bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Subscription
                     </button>
                     <button onclick="openModal()" id="addTxnBtn"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
@@ -372,30 +395,45 @@
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                         <div
                             class="p-6 border-b border-gray-100 dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50 dark:bg-slate-800">
-                            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-1">
-                                <div class="relative w-full sm:w-64">
-                                    <i
-                                        class="fa-solid fa-search absolute left-3 top-3 text-gray-400 dark:text-gray-500 text-sm"></i>
-                                    <input type="text" id="searchInput" placeholder="Search..."
-                                        class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <div class="flex flex-col gap-3 w-full md:w-auto flex-1">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <div class="relative flex-1 sm:w-64">
+                                        <i
+                                            class="fa-solid fa-search absolute left-3 top-3 text-gray-400 dark:text-gray-500 text-sm"></i>
+                                        <input type="text" id="searchInput" placeholder="Search..."
+                                            class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <select id="filterType"
+                                            class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">All Types</option>
+                                            <option value="income">Income</option>
+                                            <option value="expense">Expense</option>
+                                        </select>
+                                        <select id="filterWallet"
+                                            class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">All Wallets</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="flex gap-2">
-                                    <select id="filterType"
-                                        class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <option value="all">All Types</option>
-                                        <option value="income">Income</option>
-                                        <option value="expense">Expense</option>
-                                    </select>
-                                    <select id="filterDate"
-                                        class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <div class="flex flex-col sm:flex-row gap-2 items-center">
+                                    <select id="filterDate" onchange="toggleCustomDate()"
+                                        class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
                                         <option value="all">All Time</option>
                                         <option value="this_month">This Month</option>
                                         <option value="last_month">Last Month</option>
                                         <option value="this_year">This Year</option>
+                                        <option value="custom">Custom Range</option>
                                     </select>
+                                    <div id="customDateRange" class="hidden flex gap-2">
+                                        <input type="date" id="startDate"
+                                            class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm outline-none">
+                                        <input type="date" id="endDate"
+                                            class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm outline-none">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 mt-3 md:mt-0">
                                 <button onclick="exportCSV()"
                                     class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm font-medium flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                     <i class="fa-solid fa-file-csv text-green-600 text-lg"></i> CSV
@@ -413,6 +451,7 @@
                                         class="bg-gray-50 dark:bg-slate-700 text-xs uppercase text-gray-500 dark:text-gray-300 font-semibold border-b border-gray-100 dark:border-slate-600">
                                         <th class="px-6 py-4 rounded-tl-lg">Category</th>
                                         <th class="px-6 py-4">Date</th>
+                                        <th class="px-6 py-4">Wallet</th>
                                         <th class="px-6 py-4">Note</th>
                                         <th class="px-6 py-4 text-right">Amount</th>
                                         <th class="px-6 py-4 rounded-tr-lg text-center">Action</th>
@@ -429,6 +468,49 @@
                                 <i class="fa-solid fa-receipt text-2xl text-gray-300"></i></div>
                             <p>No transactions found.</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Calendar View (NEW) -->
+                <div id="view-calendar" class="hidden max-w-7xl mx-auto">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white" id="calendarTitle">Calendar</h3>
+                            <div class="flex gap-2">
+                                <button onclick="changeMonth(-1)"
+                                    class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"><i
+                                        class="fa-solid fa-chevron-left"></i></button>
+                                <button onclick="changeMonth(1)"
+                                    class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"><i
+                                        class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div
+                            class="calendar-grid mb-2 text-center font-medium text-gray-500 dark:text-gray-400 text-sm">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid text-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Recurring View (NEW) -->
+                <div id="view-recurring" class="hidden max-w-7xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurringGrid">
+                        <!-- Items Injected Here -->
+                    </div>
+                    <div id="emptyRecurring"
+                        class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
+                        <i class="fa-solid fa-rotate text-4xl mb-4 text-gray-300 dark:text-slate-600"></i>
+                        <p class="text-lg font-medium mb-2">No subscriptions yet</p>
+                        <button onclick="openRecurringModal()" class="text-blue-500 hover:text-blue-600 font-medium">Add
+                            Subscription</button>
                     </div>
                 </div>
 
@@ -469,6 +551,14 @@
                             class="py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">Income</button>
                     </div>
                     <input type="hidden" id="type" value="expense">
+
+                    <!-- Wallet Select (NEW) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Wallet</label>
+                        <select id="txnWallet"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer"></select>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
                         <div class="relative">
@@ -510,7 +600,56 @@
         </div>
     </div>
 
-    <!-- Add/Edit Category Modal (NEW) -->
+    <!-- Recurring Modal (NEW) -->
+    <div id="recurringModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRecurringModal()">
+        </div>
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl">
+                <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white" id="recModalTitle">Add Subscription</h3>
+                    <button onclick="closeRecurringModal()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
+                            class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <form id="recurringForm" class="p-6 space-y-4">
+                    <input type="hidden" id="recId">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                        <input type="text" id="recName" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="e.g. Netflix">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
+                            <input type="number" step="0.01" id="recAmount" required
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white"
+                                placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Due Day
+                                (1-31)</label>
+                            <input type="number" min="1" max="31" id="recDay" required
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                        <select id="recCategory"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white"></select>
+                    </div>
+                    <button type="submit"
+                        class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg">Save
+                        Subscription</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
     <div id="categoryModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeCategoryModal()">
         </div>
@@ -639,7 +778,6 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').classList.remove('hidden'); });
         document.getElementById('installBtn').addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); } });
 
-        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBSU62EbaZWvRQzhf9nc5hY7-MYhm4Kqyo",
             authDomain: "budgetmaster-d0cbd.firebaseapp.com",
@@ -657,11 +795,15 @@
         let currentUser = null;
         let transactions = [];
         let goals = [];
+        let recurringItems = [];
+        let wallets = [];
         let categories = { expense: [], income: [] };
-        let categoryMap = {}; // ID -> Data Map for quick lookup
+        let categoryMap = {};
+        let walletMap = {};
         let monthlyBudget = 0;
         let expenseChart = null;
         let trendChart = null;
+        let currentCalendarDate = new Date();
 
         const defaultCategoriesList = [
             { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -676,6 +818,12 @@
             { id: 'investments', type: 'income', name: 'Investments', icon: 'fa-chart-line', color: '#8b5cf6' },
             { id: 'gift', type: 'income', name: 'Gifts', icon: 'fa-gift', color: '#ec4899' },
             { id: 'other_income', type: 'income', name: 'Other Income', icon: 'fa-plus-circle', color: '#64748b' }
+        ];
+
+        const defaultWallets = [
+            { id: 'cash', name: 'Cash' },
+            { id: 'bank', name: 'Bank Account' },
+            { id: 'card', name: 'Credit Card' }
         ];
 
         function signInWithGoogle() {
@@ -706,9 +854,11 @@
                     document.getElementById('view-landing').classList.add('hidden');
                     document.getElementById('app-layout').classList.remove('hidden');
 
+                    setupWalletsListener();
                     setupCategoriesListener();
                     setupRealtimeListener();
                     setupGoalsListener();
+                    setupRecurringListener();
                     loadBudget();
                 } else {
                     document.getElementById('view-landing').classList.remove('hidden');
@@ -729,103 +879,214 @@
             updateUI();
         }
 
-        // --- CATEGORY LOGIC (DYNAMIC) ---
+        // --- WALLETS ---
+        function setupWalletsListener() {
+            const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('wallets');
+            ref.onSnapshot(async (snap) => {
+                if (snap.empty) { await seedDefaultWallets(ref); return; }
+                wallets = []; walletMap = {};
+                snap.forEach(doc => { const d = { id: doc.id, ...doc.data() }; wallets.push(d); walletMap[d.id] = d; });
+                updateWalletOptions();
+            });
+        }
+        async function seedDefaultWallets(ref) {
+            const batch = db.batch();
+            defaultWallets.forEach(w => batch.set(ref.doc(w.id), w));
+            await batch.commit();
+        }
+        function updateWalletOptions() {
+            const sel = document.getElementById('txnWallet'); sel.innerHTML = '';
+            const filter = document.getElementById('filterWallet'); filter.innerHTML = '<option value="all">All Wallets</option>';
+            wallets.forEach(w => {
+                sel.appendChild(new Option(w.name, w.id));
+                filter.appendChild(new Option(w.name, w.id));
+            });
+        }
+
+        // --- CATEGORIES ---
         function setupCategoriesListener() {
             const catsRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories');
             catsRef.onSnapshot(async (snapshot) => {
                 if (snapshot.empty) { await seedDefaultCategories(catsRef); return; }
-
-                categories = { expense: [], income: [] };
-                categoryMap = {};
-
+                categories = { expense: [], income: [] }; categoryMap = {};
                 snapshot.forEach(doc => {
                     const data = { id: doc.id, ...doc.data() };
                     if (data.type === 'expense') categories.expense.push(data);
                     else if (data.type === 'income') categories.income.push(data);
                     categoryMap[data.id] = data;
                 });
-                updateCategoryOptions();
-                updateUI(); // Refresh UI names
+                updateCategoryOptions(); updateRecCategoryOptions(); updateUI();
             });
         }
-
         async function seedDefaultCategories(ref) {
             const batch = db.batch();
             defaultCategoriesList.forEach(cat => batch.set(ref.doc(cat.id), cat));
             await batch.commit();
         }
-
         function updateCategoryOptions() {
-            const type = document.getElementById('type').value;
-            const sel = document.getElementById('category');
-            sel.innerHTML = '';
-
+            const type = document.getElementById('type').value, sel = document.getElementById('category'); sel.innerHTML = '';
             const list = categories[type] || [];
             if (!list.length) { sel.innerHTML = '<option>Loading...</option>'; return; }
-
-            // Separate Parents and Children for cleaner hierarchy
             const parents = list.filter(c => !c.parentId);
             const children = list.filter(c => c.parentId);
-
             parents.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.name;
-                sel.appendChild(opt);
-
-                // Find children for this parent
-                const myChildren = children.filter(c => c.parentId === p.id);
-                myChildren.forEach(child => {
-                    const childOpt = document.createElement('option');
-                    childOpt.value = child.id;
-                    childOpt.innerHTML = `&nbsp;&nbsp;&nbsp;› ${child.name}`; // Visual Indent
-                    sel.appendChild(childOpt);
+                sel.appendChild(new Option(p.name, p.id));
+                children.filter(c => c.parentId === p.id).forEach(c => {
+                    const opt = new Option(c.name, c.id); opt.innerHTML = `&nbsp;&nbsp;&nbsp;› ${c.name}`; sel.appendChild(opt);
                 });
             });
         }
-
-        // Category Modal Logic
         function openCategoryModal() {
-            document.getElementById('categoryForm').reset();
-            document.getElementById('catIcon').value = 'fa-tag'; // Reset default
-
-            // Populate Parent Dropdown based on current transaction type context
+            document.getElementById('categoryForm').reset(); document.getElementById('catIcon').value = 'fa-tag';
             const type = document.getElementById('type').value;
-            const parentSel = document.getElementById('catParent');
-            parentSel.innerHTML = '<option value="">None (Top Level)</option>';
-
-            const list = categories[type] || [];
-            list.filter(c => !c.parentId).forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = c.name;
-                parentSel.appendChild(opt);
-            });
-
+            const parentSel = document.getElementById('catParent'); parentSel.innerHTML = '<option value="">None (Top Level)</option>';
+            (categories[type] || []).filter(c => !c.parentId).forEach(c => parentSel.appendChild(new Option(c.name, c.id)));
             document.getElementById('categoryModal').classList.remove('hidden');
         }
         function closeCategoryModal() { document.getElementById('categoryModal').classList.add('hidden'); }
-
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const type = document.getElementById('type').value;
-            const name = document.getElementById('catName').value;
-            const parentId = document.getElementById('catParent').value;
-            const color = document.getElementById('catColor').value;
-            const icon = document.getElementById('catIcon').value || 'fa-tag';
-
             const newCat = {
-                name, type, color, icon,
-                parentId: parentId || null,
+                name: document.getElementById('catName').value,
+                type: document.getElementById('type').value,
+                parentId: document.getElementById('catParent').value || null,
+                color: document.getElementById('catColor').value,
+                icon: document.getElementById('catIcon').value || 'fa-tag',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-
-            try {
-                await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat);
-                closeCategoryModal();
-                // Auto-select the new category? (Optional, but nice)
-            } catch (err) { alert("Error adding category"); }
+            try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat); closeCategoryModal(); } catch (err) { alert("Error"); }
         });
+
+        // --- RECURRING ---
+        function setupRecurringListener() {
+            db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring')
+                .onSnapshot(snap => {
+                    recurringItems = [];
+                    snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
+                    renderRecurring();
+                });
+        }
+        function renderRecurring() {
+            const grid = document.getElementById('recurringGrid'); grid.innerHTML = '';
+            if (recurringItems.length === 0) { document.getElementById('emptyRecurring').classList.remove('hidden'); return; }
+            document.getElementById('emptyRecurring').classList.add('hidden');
+
+            const today = new Date().getDate();
+
+            recurringItems.forEach(item => {
+                const cat = categoryMap[item.category] || { name: 'Unknown', icon: 'fa-rotate', color: '#ccc' };
+                const isDue = item.day <= today; // Simplistic check
+                const statusColor = isDue ? 'text-rose-500' : 'text-emerald-500';
+
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
+                        <button onclick="deleteRecurring('${item.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background-color:${cat.color}"><i class="fa-solid ${cat.icon}"></i></div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 dark:text-white">${item.name}</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${cat.name}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase">Amount</p>
+                                <p class="text-lg font-bold text-gray-800 dark:text-white">${formatCurrency(item.amount)}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400">Due Day: ${item.day}</p>
+                                <button onclick="payRecurring('${item.id}')" class="mt-1 text-xs font-bold bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg hover:bg-indigo-200">Pay Now</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        function updateRecCategoryOptions() {
+            const sel = document.getElementById('recCategory'); sel.innerHTML = '';
+            categories['expense'].forEach(c => sel.appendChild(new Option(c.name, c.id)));
+        }
+        const recModal = document.getElementById('recurringModal');
+        function openRecurringModal() { document.getElementById('recurringForm').reset(); updateRecCategoryOptions(); recModal.classList.remove('hidden'); }
+        function closeRecurringModal() { recModal.classList.add('hidden'); }
+
+        document.getElementById('recurringForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('recName').value,
+                amount: parseFloat(document.getElementById('recAmount').value),
+                day: parseInt(document.getElementById('recDay').value),
+                category: document.getElementById('recCategory').value
+            };
+            try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').add(data); closeRecurringModal(); } catch (e) { alert("Error"); }
+        });
+
+        window.deleteRecurring = async (id) => { if (confirm("Delete?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').doc(id).delete(); };
+
+        window.payRecurring = (id) => {
+            const item = recurringItems.find(i => i.id === id);
+            if (!item) return;
+            // Pre-fill transaction modal
+            openModal();
+            setType('expense');
+            document.getElementById('amount').value = item.amount;
+            document.getElementById('note').value = "Payment for " + item.name;
+            setTimeout(() => document.getElementById('category').value = item.category, 100);
+        };
+
+        // --- CALENDAR ---
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            document.getElementById('calendarTitle').textContent = currentCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Empty slots
+            for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                // Aggregate spending for this day
+                const dayTxns = transactions.filter(t => t.date === dateStr && t.type === 'expense');
+                const total = dayTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+
+                let content = '';
+                if (total > 0) {
+                    const colorClass = total > (monthlyBudget / 30) ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600';
+                    content = `<div class="mt-1 text-xs font-bold px-1 rounded ${colorClass}">${formatCurrency(total)}</div>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="calendar-day border border-gray-100 dark:border-slate-700 p-1 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded transition-colors">
+                        <span class="text-xs text-gray-400">${day}</span>
+                        ${content}
+                    </div>
+                `;
+            }
+        }
+
+        // --- TRANSACTIONS & FILTERS ---
+        function toggleCustomDate() {
+            const val = document.getElementById('filterDate').value;
+            const customDiv = document.getElementById('customDateRange');
+            if (val === 'custom') customDiv.classList.remove('hidden');
+            else { customDiv.classList.add('hidden'); renderFullList(); }
+        }
+
+        document.getElementById('startDate').addEventListener('change', renderFullList);
+        document.getElementById('endDate').addEventListener('change', renderFullList);
+        document.getElementById('filterWallet').addEventListener('change', renderFullList);
 
         function setupRealtimeListener() {
             const collectionRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses');
@@ -880,7 +1141,7 @@
                 if (!catTotals[t.category]) catTotals[t.category] = 0; catTotals[t.category] += Number(t.amount);
                 if (catTotals[t.category] > topAmt) { topAmt = catTotals[t.category]; topId = t.category; }
             });
-            document.getElementById('insightTopCat').textContent = topId ? getCategoryName('expense', topId) : '-';
+            document.getElementById('insightTopCat').textContent = topId ? (categoryMap[topId]?.name || 'Unknown') : '-';
             document.getElementById('insightTopCatAmount').textContent = formatCurrency(topAmt);
 
             const spent = transactions.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear()).reduce((a, b) => a + Number(b.amount), 0);
@@ -894,7 +1155,7 @@
         }
 
         function updateUI() {
-            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights();
+            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights(); renderCalendar();
         }
         function renderSummary() {
             let inc = 0, exp = 0; transactions.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
@@ -904,16 +1165,38 @@
         }
         function renderFullList() {
             const list = document.getElementById('fullTransactionList'); list.innerHTML = '';
-            const type = document.getElementById('filterType').value, dateFilter = document.getElementById('filterDate').value, search = document.getElementById('searchInput').value.toLowerCase();
+            const type = document.getElementById('filterType').value;
+            const wallet = document.getElementById('filterWallet').value;
+            const dateFilter = document.getElementById('filterDate').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            // Date Range Logic
+            let start = null, end = null;
+            if (dateFilter === 'custom') {
+                const s = document.getElementById('startDate').value;
+                const e = document.getElementById('endDate').value;
+                if (s) start = new Date(s);
+                if (e) end = new Date(e);
+            }
+
             const filtered = transactions.filter(t => {
                 const matchType = type === 'all' || t.type === type;
+                const matchWallet = wallet === 'all' || t.walletId === wallet;
+
                 let matchDate = true; const d = new Date(t.date), now = new Date();
                 if (dateFilter === 'this_year') matchDate = d.getFullYear() === now.getFullYear();
                 if (dateFilter === 'this_month') matchDate = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
                 if (dateFilter === 'last_month') { const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1); matchDate = d.getMonth() === lm.getMonth() && d.getFullYear() === lm.getFullYear(); }
-                const matchSearch = t.note.toLowerCase().includes(search) || getCategoryName(t.type, t.category).toLowerCase().includes(search);
-                return matchType && matchDate && matchSearch;
+                if (dateFilter === 'custom') {
+                    if (start && d < start) matchDate = false;
+                    if (end && d > end) matchDate = false;
+                }
+
+                const catName = categoryMap[t.category]?.name || '';
+                const matchSearch = t.note.toLowerCase().includes(search) || catName.toLowerCase().includes(search);
+                return matchType && matchWallet && matchDate && matchSearch;
             });
+
             if (filtered.length === 0) document.getElementById('emptyState').classList.remove('hidden');
             else { document.getElementById('emptyState').classList.add('hidden'); filtered.forEach(t => list.innerHTML += createTransactionRowHTML(t, false)); }
         }
@@ -983,8 +1266,9 @@
         function renderChart() {
             const ctx = document.getElementById('expenseChart').getContext('2d');
             const catTotals = {}; transactions.filter(t => t.type === 'expense').forEach(t => { if (!catTotals[t.category]) catTotals[t.category] = 0; catTotals[t.category] += Number(t.amount); });
-            const labels = Object.keys(catTotals).map(k => getCategoryName('expense', k));
-            const data = Object.values(catTotals); const bgColors = Object.keys(catTotals).map(k => getCategoryColor('expense', k));
+            const labels = Object.keys(catTotals).map(k => categoryMap[k]?.name || 'Unknown');
+            const data = Object.values(catTotals);
+            const bgColors = Object.keys(catTotals).map(k => categoryMap[k]?.color || '#ccc');
             const isDark = document.documentElement.classList.contains('dark');
             if (expenseChart) expenseChart.destroy();
             expenseChart = new Chart(ctx, { type: 'doughnut', data: { labels: labels.length ? labels : ['No Data'], datasets: [{ data: data.length ? data : [1], backgroundColor: data.length ? bgColors : [isDark ? '#334155' : '#f1f5f9'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, cutout: '75%', plugins: { legend: { display: false } } } });
@@ -992,7 +1276,8 @@
             const total = data.reduce((a, b) => a + b, 0);
             Object.keys(catTotals).forEach(catId => {
                 const amt = catTotals[catId], pct = total ? ((amt / total) * 100).toFixed(1) : 0;
-                legendEl.innerHTML += `<div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background-color: ${getCategoryColor('expense', catId)}"></div><span class="text-gray-600 dark:text-gray-300">${getCategoryName('expense', catId)}</span></div><span class="font-bold text-gray-700 dark:text-gray-200">${pct}% <span class="text-xs font-normal text-gray-400">(${formatCurrency(amt)})</span></span></div>`;
+                const cat = categoryMap[catId] || { name: 'Unknown', color: '#ccc' };
+                legendEl.innerHTML += `<div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background-color: ${cat.color}"></div><span class="text-gray-600 dark:text-gray-300">${cat.name}</span></div><span class="font-bold text-gray-700 dark:text-gray-200">${pct}% <span class="text-xs font-normal text-gray-400">(${formatCurrency(amt)})</span></span></div>`;
             });
         }
         function renderTrendChart() {
@@ -1014,7 +1299,8 @@
         }
 
         function createTransactionRowHTML(t, isCompact) {
-            const cat = getCategoryConfig(t.type, t.category);
+            const cat = categoryMap[t.category] || { name: 'Unknown', icon: 'fa-question', color: '#ccc' };
+            const wallet = walletMap[t.walletId] || { name: '-' };
             const isInc = t.type === 'income';
             const color = isInc ? 'text-emerald-600' : 'text-gray-800 dark:text-white';
             const bg = isInc ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400';
@@ -1023,32 +1309,27 @@
             if (isCompact) {
                 return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${cat.name}</p><p class="text-xs text-gray-400 truncate">${t.note || 'No note'}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color}">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
             } else {
-                return `<tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700 group border-b border-gray-50 dark:border-slate-800 last:border-0"><td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-xs"><i class="fa-solid ${cat.icon}"></i></div><span class="font-medium text-gray-700 dark:text-gray-300">${cat.name}</span></div></td><td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">${dateDisplay}</td><td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${t.note}">${t.note || '-'}</td><td class="px-6 py-4 text-right font-mono font-medium ${color}">${sign}${formatCurrency(t.amount)}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editTransaction('${t.id}')" class="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
+                return `<tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700 group border-b border-gray-50 dark:border-slate-800 last:border-0">
+                    <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-xs"><i class="fa-solid ${cat.icon}"></i></div><span class="font-medium text-gray-700 dark:text-gray-300">${cat.name}</span></div></td>
+                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">${dateDisplay}</td>
+                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs font-medium">${wallet.name}</td>
+                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${t.note}">${t.note || '-'}</td>
+                    <td class="px-6 py-4 text-right font-mono font-medium ${color}">${sign}${formatCurrency(t.amount)}</td>
+                    <td class="px-6 py-4 text-center"><div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editTransaction('${t.id}')" class="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg"><i class="fa-solid fa-trash"></i></button></div></td>
+                </tr>`;
             }
         }
         function formatCurrency(num) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num); }
         function formatDate(d) { return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
-        // Updated to use Map for faster lookups and handle parent hierarchy
-        function getCategoryConfig(type, id) {
-            const cat = categoryMap[id];
-            if (!cat) return { name: 'Unknown', icon: 'fa-question', color: '#ccc' };
-
-            // Recursively build name: Parent > Child
-            let displayName = cat.name;
-            if (cat.parentId && categoryMap[cat.parentId]) {
-                displayName = `${categoryMap[cat.parentId].name} › ${cat.name}`;
-            }
-
-            return { ...cat, name: displayName };
-        }
-        function getCategoryName(type, id) { return getCategoryConfig(type, id).name; }
-        function getCategoryColor(type, id) { return getCategoryConfig(type, id).color; }
-
         function exportCSV() {
             if (!transactions.length) return alert("No data");
-            let csv = "data:text/csv;charset=utf-8,Date,Type,Category,Note,Amount\n";
-            transactions.forEach(t => csv += `${t.date},${t.type},${getCategoryName(t.type, t.category)},"${(t.note || '').replace(/"/g, '""')}",${t.amount}\n`);
+            let csv = "data:text/csv;charset=utf-8,Date,Type,Category,Wallet,Note,Amount\n";
+            transactions.forEach(t => {
+                const w = walletMap[t.walletId]?.name || '-';
+                const c = categoryMap[t.category]?.name || 'Unknown';
+                csv += `${t.date},${t.type},${c},${w},"${(t.note || '').replace(/"/g, '""')}",${t.amount}\n`
+            });
             const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "expenses.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
@@ -1065,13 +1346,14 @@
             const tableData = transactions.map(t => [
                 t.date,
                 t.type.toUpperCase(),
-                getCategoryName(t.type, t.category),
+                categoryMap[t.category]?.name || 'Unknown',
+                walletMap[t.walletId]?.name || '-',
                 t.note || '-',
                 formatCurrency(t.amount)
             ]);
 
             doc.autoTable({
-                head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+                head: [['Date', 'Type', 'Category', 'Wallet', 'Note', 'Amount']],
                 body: tableData,
                 startY: 35,
                 theme: 'grid',
@@ -1088,15 +1370,27 @@
             document.getElementById('pageTitle').textContent = id.charAt(0).toUpperCase() + id.slice(1);
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('bg-blue-600', 'text-white'); el.classList.add('text-slate-400'); });
             const active = document.getElementById(`nav-${id}`); if (active) { active.classList.remove('text-slate-400'); active.classList.add('bg-blue-600', 'text-white'); }
-            if (id === 'goals') { document.getElementById('addGoalBtn').classList.remove('hidden'); document.getElementById('addTxnBtn').classList.add('hidden'); }
-            else { document.getElementById('addGoalBtn').classList.add('hidden'); document.getElementById('addTxnBtn').classList.remove('hidden'); }
+
+            // Button Logic
+            const goalsBtn = document.getElementById('addGoalBtn');
+            const recBtn = document.getElementById('addRecBtn');
+            const txnBtn = document.getElementById('addTxnBtn');
+
+            goalsBtn.classList.add('hidden');
+            recBtn.classList.add('hidden');
+            txnBtn.classList.add('hidden');
+
+            if (id === 'goals') goalsBtn.classList.remove('hidden');
+            else if (id === 'recurring') recBtn.classList.remove('hidden');
+            else txnBtn.classList.remove('hidden');
+
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('mobileOverlay').classList.toggle('active'); }
 
         const modal = document.getElementById('transactionModal');
         const form = document.getElementById('transactionForm');
-        function openModal() { form.reset(); document.getElementById('editId').value = ''; document.getElementById('date').valueAsDate = new Date(); setType('expense'); modal.classList.remove('hidden'); }
+        function openModal() { form.reset(); document.getElementById('editId').value = ''; document.getElementById('date').valueAsDate = new Date(); setType('expense'); updateWalletOptions(); modal.classList.remove('hidden'); }
         function closeModal() { modal.classList.add('hidden'); }
 
         function setType(type) {
@@ -1111,32 +1405,26 @@
             }
             updateCategoryOptions();
         }
-        function updateCategoryOptions() {
-            const type = document.getElementById('type').value, sel = document.getElementById('category'); sel.innerHTML = '';
-            const list = categories[type] || [];
-            if (!list.length) { sel.innerHTML = '<option>Loading...</option>'; return; }
-
-            const parents = list.filter(c => !c.parentId);
-            const children = list.filter(c => c.parentId);
-
-            parents.forEach(p => {
-                const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
-                children.filter(c => c.parentId === p.id).forEach(c => {
-                    const co = document.createElement('option'); co.value = c.id; co.innerHTML = `&nbsp;&nbsp;&nbsp;› ${c.name}`; sel.appendChild(co);
-                });
-            });
-        }
         function editTransaction(id) {
             const t = transactions.find(x => x.id === id); if (!t) return;
             document.getElementById('editId').value = t.id; setType(t.type);
             document.getElementById('amount').value = t.amount; document.getElementById('date').value = t.date; document.getElementById('note').value = t.note || '';
+            updateWalletOptions(); setTimeout(() => { document.getElementById('txnWallet').value = t.walletId || 'cash'; }, 50);
             setTimeout(() => document.getElementById('category').value = t.category, 0);
             document.getElementById('modalTitle').textContent = 'Edit Transaction'; modal.classList.remove('hidden');
         }
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); if (!currentUser) return;
             const editId = document.getElementById('editId').value;
-            const data = { type: document.getElementById('type').value, amount: parseFloat(document.getElementById('amount').value), category: document.getElementById('category').value, date: document.getElementById('date').value, note: document.getElementById('note').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+            const data = {
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                note: document.getElementById('note').value,
+                walletId: document.getElementById('txnWallet').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
             const btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
             try {
                 const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses');
