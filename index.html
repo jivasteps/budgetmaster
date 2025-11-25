@@ -421,24 +421,28 @@
          * APP LOGIC
          */
 
-        // CATEGORIES CONFIG
-        const categories = {
-            expense: [
-                { id: 'food', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
-                { id: 'transport', name: 'Transportation', icon: 'fa-car', color: '#60a5fa' },
-                { id: 'shopping', name: 'Shopping', icon: 'fa-bag-shopping', color: '#c084fc' },
-                { id: 'bills', name: 'Bills & Utilities', icon: 'fa-bolt', color: '#fbbf24' },
-                { id: 'entertainment', name: 'Entertainment', icon: 'fa-film', color: '#f472b6' },
-                { id: 'health', name: 'Health', icon: 'fa-heart-pulse', color: '#34d399' },
-                { id: 'other', name: 'Others', icon: 'fa-circle-question', color: '#94a3b8' }
-            ],
-            income: [
-                { id: 'salary', name: 'Salary', icon: 'fa-money-bill-wave', color: '#10b981' },
-                { id: 'freelance', name: 'Freelance', icon: 'fa-laptop-code', color: '#3b82f6' },
-                { id: 'investments', name: 'Investments', icon: 'fa-chart-line', color: '#8b5cf6' },
-                { id: 'gift', name: 'Gifts', icon: 'fa-gift', color: '#ec4899' },
-                { id: 'other_income', name: 'Other Income', icon: 'fa-plus-circle', color: '#64748b' }
-            ]
+        // DEFAULT CATEGORIES FOR SEEDING (Flattened structure for easier DB insert)
+        const defaultCategoriesList = [
+            // Expense
+            { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
+            { id: 'transport', type: 'expense', name: 'Transportation', icon: 'fa-car', color: '#60a5fa' },
+            { id: 'shopping', type: 'expense', name: 'Shopping', icon: 'fa-bag-shopping', color: '#c084fc' },
+            { id: 'bills', type: 'expense', name: 'Bills & Utilities', icon: 'fa-bolt', color: '#fbbf24' },
+            { id: 'entertainment', type: 'expense', name: 'Entertainment', icon: 'fa-film', color: '#f472b6' },
+            { id: 'health', type: 'expense', name: 'Health', icon: 'fa-heart-pulse', color: '#34d399' },
+            { id: 'other', type: 'expense', name: 'Others', icon: 'fa-circle-question', color: '#94a3b8' },
+            // Income
+            { id: 'salary', type: 'income', name: 'Salary', icon: 'fa-money-bill-wave', color: '#10b981' },
+            { id: 'freelance', type: 'income', name: 'Freelance', icon: 'fa-laptop-code', color: '#3b82f6' },
+            { id: 'investments', type: 'income', name: 'Investments', icon: 'fa-chart-line', color: '#8b5cf6' },
+            { id: 'gift', type: 'income', name: 'Gifts', icon: 'fa-gift', color: '#ec4899' },
+            { id: 'other_income', type: 'income', name: 'Other Income', icon: 'fa-plus-circle', color: '#64748b' }
+        ];
+
+        // Reactive Category State
+        let categories = {
+            expense: [],
+            income: []
         };
 
         // FIREBASE SETUP
@@ -472,16 +476,70 @@
                 if (user) {
                     currentUser = user;
                     document.getElementById('userIdDisplay').textContent = `ID: ${user.uid.substring(0, 6)}...`;
-                    setupRealtimeListener();
+                    setupCategoriesListener(); // Load categories first
+                    setupRealtimeListener(); // Then transactions
                 }
             });
 
             // Set default date to today
             document.getElementById('date').valueAsDate = new Date();
-            updateCategoryOptions();
         }
 
-        // FIRESTORE LISTENER
+        // CATEGORIES LISTENER & SEEDER
+        function setupCategoriesListener() {
+            if (!currentUser) return;
+
+            const catsRef = db.collection('artifacts')
+                .doc(appId)
+                .collection('users')
+                .doc(currentUser.uid)
+                .collection('categories');
+
+            catsRef.onSnapshot(async (snapshot) => {
+                if (snapshot.empty) {
+                    console.log("No categories found. Seeding defaults...");
+                    await seedDefaultCategories(catsRef);
+                    return;
+                }
+
+                // Reset local state
+                categories = { expense: [], income: [] };
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.type === 'expense') categories.expense.push(data);
+                    else if (data.type === 'income') categories.income.push(data);
+                });
+
+                // Update UI components that depend on categories
+                updateCategoryOptions();
+                updateUI(); // Re-render lists/charts with new category metadata
+
+            }, (error) => {
+                console.error("Categories fetch error:", error);
+            });
+        }
+
+        async function seedDefaultCategories(ref) {
+            // Batch write for atomicity
+            const batch = db.batch();
+
+            defaultCategoriesList.forEach(cat => {
+                // Create a doc reference with specific ID if possible, or auto-id
+                // Here we use the cat.id as the doc ID for easier deduping
+                const docRef = ref.doc(cat.id);
+                batch.set(docRef, cat);
+            });
+
+            try {
+                await batch.commit();
+                console.log("Categories seeded successfully.");
+            } catch (err) {
+                console.error("Error seeding categories:", err);
+            }
+        }
+
+        // FIRESTORE LISTENER (TRANSACTIONS)
         function setupRealtimeListener() {
             if (!currentUser) return;
 
@@ -706,6 +764,7 @@
         }
 
         function getCategoryConfig(type, id) {
+            // Updated to use the reactive 'categories' object populated from DB
             const list = categories[type] || [];
             return list.find(c => c.id === id) || { name: 'Unknown', icon: 'fa-question', color: '#ccc' };
         }
@@ -789,7 +848,17 @@
             const type = document.getElementById('type').value;
             const select = document.getElementById('category');
             select.innerHTML = '';
-            categories[type].forEach(c => {
+
+            const cats = categories[type] || [];
+
+            if (cats.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = "Loading categories...";
+                select.appendChild(opt);
+                return;
+            }
+
+            cats.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.id;
                 opt.textContent = c.name;
