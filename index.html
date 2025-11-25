@@ -139,7 +139,6 @@
             }
         }
 
-        /* Calendar Styles */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -149,11 +148,60 @@
         .calendar-day {
             min-height: 80px;
         }
+
+        /* Pin Pad Styles */
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            transition: all 0.2s;
+        }
+
+        .pin-dot.filled {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 
 <body
     class="bg-gray-50 text-gray-800 dark:bg-slate-900 dark:text-gray-100 h-screen overflow-hidden transition-colors duration-300">
+
+    <!-- LOCK SCREEN -->
+    <div id="view-lock"
+        class="hidden fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center text-white">
+        <div class="mb-8 flex flex-col items-center">
+            <div
+                class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/50">
+                <i class="fa-solid fa-lock text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold">App Locked</h2>
+            <p class="text-slate-400 text-sm mt-1">Enter your 4-digit PIN to unlock</p>
+        </div>
+        <div class="flex gap-4 mb-8">
+            <div class="pin-dot" id="pin-1"></div>
+            <div class="pin-dot" id="pin-2"></div>
+            <div class="pin-dot" id="pin-3"></div>
+            <div class="pin-dot" id="pin-4"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-6 text-2xl font-medium">
+            <button onclick="enterPin(1)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">1</button>
+            <button onclick="enterPin(2)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">2</button>
+            <button onclick="enterPin(3)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">3</button>
+            <button onclick="enterPin(4)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">4</button>
+            <button onclick="enterPin(5)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">5</button>
+            <button onclick="enterPin(6)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">6</button>
+            <button onclick="enterPin(7)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">7</button>
+            <button onclick="enterPin(8)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">8</button>
+            <button onclick="enterPin(9)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">9</button>
+            <div class="w-16 h-16"></div>
+            <button onclick="enterPin(0)" class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors">0</button>
+            <button onclick="clearPin()"
+                class="w-16 h-16 rounded-full hover:bg-slate-800 transition-colors text-rose-500"><i
+                    class="fa-solid fa-delete-left"></i></button>
+        </div>
+    </div>
 
     <!-- LOGIN -->
     <div id="view-landing"
@@ -213,9 +261,17 @@
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-rotate w-5"></i> <span class="font-medium">Recurring</span>
                 </a>
+                <a href="#" onclick="showPage('debts')" id="nav-debts"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-hand-holding-dollar w-5"></i> <span class="font-medium">Debts</span>
+                </a>
                 <a href="#" onclick="showPage('goals')" id="nav-goals"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-bullseye w-5"></i> <span class="font-medium">Savings Goals</span>
+                </a>
+                <a href="#" onclick="showPage('settings')" id="nav-settings"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-gear w-5"></i> <span class="font-medium">Settings</span>
                 </a>
                 <button id="installBtn"
                     class="hidden w-full flex items-center gap-3 px-4 py-3 text-emerald-400 hover:text-emerald-300 hover:bg-slate-800 rounded-xl transition-colors text-left mt-8">
@@ -259,6 +315,10 @@
                 </button>
                 <h2 id="pageTitle" class="text-lg font-semibold text-gray-800 dark:text-white">Dashboard</h2>
                 <div class="flex items-center gap-2">
+                    <button onclick="openDebtModal()" id="addDebtBtn"
+                        class="hidden bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Debt Record
+                    </button>
                     <button onclick="openGoalModal()" id="addGoalBtn"
                         class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> New Goal
@@ -278,6 +338,7 @@
 
                 <!-- Dashboard -->
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto">
+                    <!-- ... existing budget/insight cards ... -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Budget -->
                         <div
@@ -327,9 +388,17 @@
                         </div>
                     </div>
 
-                    <!-- Summary Cards (Updated Grid) -->
+                    <!-- Category Budgets Section (NEW) -->
+                    <div id="categoryBudgetsSection"
+                        class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Category Budgets</h3>
+                        <div id="categoryBudgetsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <!-- Balance -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
@@ -338,7 +407,6 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Balance</p>
                             <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalBalance">₹0.00</h3>
                         </div>
-                        <!-- Income -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
@@ -346,7 +414,6 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Income</p>
                             <h3 class="text-2xl font-bold text-emerald-600" id="totalIncome">₹0.00</h3>
                         </div>
-                        <!-- Expenses -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
@@ -354,7 +421,6 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Expenses</p>
                             <h3 class="text-2xl font-bold text-rose-600" id="totalExpense">₹0.00</h3>
                         </div>
-                        <!-- Investments (NEW) -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-6 opacity-10"><i
@@ -365,6 +431,7 @@
                         </div>
                     </div>
 
+                    <!-- Charts & Recent -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-1 space-y-6">
                             <div
@@ -422,7 +489,7 @@
                                             <option value="all">All Types</option>
                                             <option value="income">Income</option>
                                             <option value="expense">Expense</option>
-                                            <option value="investment">Investment</option> <!-- NEW -->
+                                            <option value="investment">Investment</option>
                                         </select>
                                         <select id="filterWallet"
                                             class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -485,7 +552,7 @@
                     </div>
                 </div>
 
-                <!-- Calendar View (NEW) -->
+                <!-- Calendar View -->
                 <div id="view-calendar" class="hidden max-w-7xl mx-auto">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden p-6">
@@ -514,11 +581,9 @@
                     </div>
                 </div>
 
-                <!-- Recurring View (NEW) -->
+                <!-- Recurring View -->
                 <div id="view-recurring" class="hidden max-w-7xl mx-auto">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurringGrid">
-                        <!-- Items Injected Here -->
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurringGrid"></div>
                     <div id="emptyRecurring"
                         class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
                         <i class="fa-solid fa-rotate text-4xl mb-4 text-gray-300 dark:text-slate-600"></i>
@@ -539,6 +604,57 @@
                         <p class="text-lg font-medium mb-2">No goals set yet</p>
                         <button onclick="openGoalModal()" class="text-blue-500 hover:text-blue-600 font-medium">Create
                             your first goal</button>
+                    </div>
+                </div>
+
+                <!-- Debts View (NEW) -->
+                <div id="view-debts" class="hidden max-w-7xl mx-auto">
+                    <div id="debtsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                    <div id="emptyDebts" class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
+                        <div
+                            class="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-hand-holding-dollar text-4xl text-gray-300 dark:text-slate-600"></i>
+                        </div>
+                        <p class="text-lg font-medium mb-2">No debts recorded</p>
+                        <button onclick="openDebtModal()" class="text-blue-500 hover:text-blue-600 font-medium">Add Debt
+                            Record</button>
+                    </div>
+                </div>
+
+                <!-- Settings View (NEW) -->
+                <div id="view-settings" class="hidden max-w-3xl mx-auto">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Security Settings</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">App Lock</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Require a 4-digit PIN to access
+                                        the app.</p>
+                                </div>
+                                <button onclick="togglePinSetup()" id="pinToggleBtn"
+                                    class="bg-gray-200 dark:bg-slate-700 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
+                                    <span id="pinToggleDot"
+                                        class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                            <div id="pinSetupArea"
+                                class="hidden mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Set
+                                    4-Digit PIN</label>
+                                <div class="flex gap-2">
+                                    <input type="password" id="settingPin" maxlength="4"
+                                        class="w-32 px-4 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-widest"
+                                        placeholder="****">
+                                    <button onclick="savePin()"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium">Save</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -568,7 +684,6 @@
                     </div>
                     <input type="hidden" id="type" value="expense">
 
-                    <!-- Wallet Select (NEW) -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Wallet</label>
                         <select id="txnWallet"
@@ -616,7 +731,7 @@
         </div>
     </div>
 
-    <!-- Recurring Modal (NEW) -->
+    <!-- Recurring Modal -->
     <div id="recurringModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRecurringModal()">
         </div>
@@ -665,14 +780,14 @@
         </div>
     </div>
 
-    <!-- Add/Edit Category Modal -->
+    <!-- Add/Edit Category Modal (Updated for Budget) -->
     <div id="categoryModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeCategoryModal()">
         </div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-4">
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl">
                 <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">New Category</h3>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Category Details</h3>
                     <button onclick="closeCategoryModal()"
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
                             class="fa-solid fa-xmark text-xl"></i></button>
@@ -708,8 +823,19 @@
                                 placeholder="fa-tag" value="fa-tag">
                         </div>
                     </div>
+                    <!-- NEW: Category Budget -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Monthly Limit
+                            (Optional)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <input type="number" id="catBudget"
+                                class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="0.00">
+                        </div>
+                    </div>
                     <button type="submit"
-                        class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg">Create
+                        class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg">Save
                         Category</button>
                 </form>
             </div>
@@ -786,6 +912,56 @@
         </div>
     </div>
 
+    <!-- Debt Modal (NEW) -->
+    <div id="debtModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDebtModal()"></div>
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl">
+                <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white" id="debtModalTitle">Add Debt Record</h3>
+                    <button onclick="closeDebtModal()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
+                            class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <form id="debtForm" class="p-6 space-y-4">
+                    <input type="hidden" id="debtId">
+                    <div class="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-slate-700 p-1 rounded-xl">
+                        <button type="button" onclick="setDebtType('lent')" id="btn-lent"
+                            class="py-2 rounded-lg text-sm font-medium transition-all shadow-sm bg-white dark:bg-slate-600 text-emerald-600 dark:text-emerald-400">I
+                            Lent</button>
+                        <button type="button" onclick="setDebtType('borrowed')" id="btn-borrowed"
+                            class="py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700">I
+                            Borrowed</button>
+                    </div>
+                    <input type="hidden" id="debtType" value="lent">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Person
+                            Name</label>
+                        <input type="text" id="debtPerson" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                            <input type="number" step="0.01" id="debtAmount" required
+                                class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-lg font-mono dark:text-white outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Due Date
+                            (Optional)</label>
+                        <input type="date" id="debtDate"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-gray-600 dark:text-white outline-none">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg">Save
+                        Record</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         const manifest = { "name": "ExpenseFlow Pro", "short_name": "ExpenseFlow", "start_url": ".", "display": "standalone", "background_color": "#ffffff", "theme_color": "#2563eb", "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png", "sizes": "512x512", "type": "image/png" }] };
         document.getElementById('manifest-placeholder').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
@@ -794,7 +970,7 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').classList.remove('hidden'); });
         document.getElementById('installBtn').addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); } });
 
-        // FIREBASE SETUP
+       // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBSU62EbaZWvRQzhf9nc5hY7-MYhm4Kqyo",
             authDomain: "budgetmaster-d0cbd.firebaseapp.com",
@@ -812,6 +988,7 @@
         let currentUser = null;
         let transactions = [];
         let goals = [];
+        let debts = [];
         let recurringItems = [];
         let wallets = [];
         let categories = { expense: [], income: [], investment: [] };
@@ -821,6 +998,8 @@
         let expenseChart = null;
         let trendChart = null;
         let currentCalendarDate = new Date();
+        let userPin = null;
+        let pinInput = "";
 
         const defaultCategoriesList = [
             { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -876,11 +1055,25 @@
                     document.getElementById('view-landing').classList.add('hidden');
                     document.getElementById('app-layout').classList.remove('hidden');
 
+                    // Check Security
+                    db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('security')
+                        .onSnapshot(doc => {
+                            if (doc.exists) {
+                                userPin = doc.data().pin;
+                                if (userPin && !sessionStorage.getItem('unlocked')) {
+                                    document.getElementById('view-lock').classList.remove('hidden');
+                                } else {
+                                    updatePinUI();
+                                }
+                            }
+                        });
+
                     setupWalletsListener();
                     setupCategoriesListener();
                     setupRealtimeListener();
                     setupGoalsListener();
                     setupRecurringListener();
+                    setupDebtsListener();
                     loadBudget();
                 } else {
                     document.getElementById('view-landing').classList.remove('hidden');
@@ -892,6 +1085,82 @@
                 try { await auth.signInWithCustomToken(__initial_auth_token); } catch (e) { }
             }
             document.getElementById('date').valueAsDate = new Date();
+        }
+
+        // --- PIN LOCK LOGIC ---
+        function enterPin(num) {
+            if (pinInput.length < 4) {
+                pinInput += num;
+                updatePinDots();
+                if (pinInput.length === 4) verifyPin();
+            }
+        }
+        function clearPin() {
+            pinInput = pinInput.slice(0, -1);
+            updatePinDots();
+        }
+        function updatePinDots() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`pin-${i}`);
+                if (i <= pinInput.length) dot.classList.add('filled');
+                else dot.classList.remove('filled');
+            }
+        }
+        function verifyPin() {
+            if (pinInput === userPin) {
+                sessionStorage.setItem('unlocked', 'true');
+                document.getElementById('view-lock').classList.add('hidden');
+                pinInput = "";
+                updatePinDots();
+            } else {
+                alert("Incorrect PIN");
+                pinInput = "";
+                updatePinDots();
+            }
+        }
+
+        function togglePinSetup() {
+            const area = document.getElementById('pinSetupArea');
+            const dot = document.getElementById('pinToggleDot');
+            if (area.classList.contains('hidden')) {
+                area.classList.remove('hidden');
+                dot.classList.add('translate-x-5');
+                dot.parentElement.classList.add('bg-blue-600');
+                dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700');
+            } else {
+                // Disable PIN
+                if (confirm("Disable App Lock?")) {
+                    db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('security').set({ pin: null });
+                    area.classList.add('hidden');
+                    dot.classList.remove('translate-x-5');
+                    dot.parentElement.classList.remove('bg-blue-600');
+                    dot.parentElement.classList.add('bg-gray-200', 'dark:bg-slate-700');
+                    userPin = null;
+                }
+            }
+        }
+
+        async function savePin() {
+            const val = document.getElementById('settingPin').value;
+            if (val.length === 4 && !isNaN(val)) {
+                await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('security').set({ pin: val });
+                alert("PIN Set Successfully!");
+                document.getElementById('settingPin').value = "";
+                userPin = val;
+            } else {
+                alert("PIN must be 4 digits");
+            }
+        }
+
+        function updatePinUI() {
+            const area = document.getElementById('pinSetupArea');
+            const dot = document.getElementById('pinToggleDot');
+            if (userPin) {
+                area.classList.remove('hidden');
+                dot.classList.add('translate-x-5');
+                dot.parentElement.classList.add('bg-blue-600');
+                dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700');
+            }
         }
 
         function toggleTheme() {
@@ -925,7 +1194,7 @@
             });
         }
 
-        // --- CATEGORIES ---
+        // --- CATEGORIES (Modified for Budgets) ---
         function setupCategoriesListener() {
             const catsRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories');
             catsRef.onSnapshot(async (snapshot) => {
@@ -973,10 +1242,82 @@
                 parentId: document.getElementById('catParent').value || null,
                 color: document.getElementById('catColor').value,
                 icon: document.getElementById('catIcon').value || 'fa-tag',
+                budget: parseFloat(document.getElementById('catBudget').value) || 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat); closeCategoryModal(); } catch (err) { alert("Error"); }
         });
+
+        // --- DEBTS (NEW) ---
+        function setupDebtsListener() {
+            db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts')
+                .onSnapshot(snap => {
+                    debts = [];
+                    snap.forEach(doc => debts.push({ id: doc.id, ...doc.data() }));
+                    renderDebts();
+                });
+        }
+        function renderDebts() {
+            const grid = document.getElementById('debtsGrid'); grid.innerHTML = '';
+            if (debts.length === 0) { document.getElementById('emptyDebts').classList.remove('hidden'); return; }
+            document.getElementById('emptyDebts').classList.add('hidden');
+
+            debts.forEach(d => {
+                const isLent = d.type === 'lent';
+                const color = isLent ? 'text-emerald-600' : 'text-orange-600';
+                const bg = isLent ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-orange-100 dark:bg-orange-900/30';
+                const icon = isLent ? 'fa-hand-holding-dollar' : 'fa-hand-holding';
+
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
+                        <button onclick="deleteDebt('${d.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full ${bg} flex items-center justify-center ${color} text-xl">
+                                <i class="fa-solid ${icon}"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${isLent ? 'You Lent' : 'You Borrowed'}</p>
+                                <h4 class="text-lg font-bold text-gray-800 dark:text-white">${d.person}</h4>
+                                <p class="text-sm font-mono font-medium ${color}">${formatCurrency(d.amount)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <p class="text-xs text-gray-400">${d.dueDate ? 'Due: ' + formatDate(d.dueDate) : 'No due date'}</p>
+                            <button onclick="settleDebt('${d.id}')" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-100 text-gray-600 dark:text-gray-300 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-colors">Mark Settled</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        const debtModal = document.getElementById('debtModal');
+        function openDebtModal() { document.getElementById('debtForm').reset(); setDebtType('lent'); debtModal.classList.remove('hidden'); }
+        function closeDebtModal() { debtModal.classList.add('hidden'); }
+        function setDebtType(t) {
+            document.getElementById('debtType').value = t;
+            const btnL = document.getElementById('btn-lent');
+            const btnB = document.getElementById('btn-borrowed');
+            if (t === 'lent') {
+                btnL.className = "py-2 rounded-lg text-sm font-medium shadow-sm bg-white dark:bg-slate-600 text-emerald-600 dark:text-emerald-400";
+                btnB.className = "py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700";
+            } else {
+                btnL.className = "py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700";
+                btnB.className = "py-2 rounded-lg text-sm font-medium shadow-sm bg-white dark:bg-slate-600 text-orange-600 dark:text-orange-400";
+            }
+        }
+        document.getElementById('debtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                type: document.getElementById('debtType').value,
+                person: document.getElementById('debtPerson').value,
+                amount: parseFloat(document.getElementById('debtAmount').value),
+                dueDate: document.getElementById('debtDate').value || null,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').add(data); closeDebtModal(); } catch (e) { alert("Error"); }
+        });
+        window.deleteDebt = async (id) => { if (confirm("Delete record?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
+        window.settleDebt = async (id) => { if (confirm("Mark as settled?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
 
         // --- RECURRING ---
         function setupRecurringListener() {
@@ -1175,8 +1516,49 @@
             document.getElementById('insightDailyAvg').textContent = formatCurrency(recentSpent / 30);
         }
 
+        // NEW: Category Budget Calculation
+        function renderCategoryBudgets() {
+            const section = document.getElementById('categoryBudgetsSection');
+            const grid = document.getElementById('categoryBudgetsGrid');
+            grid.innerHTML = '';
+
+            const now = new Date();
+            const budgetedCats = categories['expense'].filter(c => c.budget && c.budget > 0);
+
+            if (budgetedCats.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+
+            budgetedCats.forEach(cat => {
+                const spent = transactions
+                    .filter(t => t.category === cat.id && new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear())
+                    .reduce((sum, t) => sum + Number(t.amount), 0);
+
+                const pct = Math.min((spent / cat.budget) * 100, 100);
+                let color = 'bg-emerald-500';
+                if (pct > 90) color = 'bg-rose-500';
+                else if (pct > 75) color = 'bg-orange-500';
+
+                grid.innerHTML += `
+                    <div class="border border-gray-100 dark:border-slate-700 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <i class="fa-solid ${cat.icon} text-xs"></i> ${cat.name}
+                            </span>
+                            <span class="text-xs text-gray-500">${formatCurrency(spent)} / ${formatCurrency(cat.budget)}</span>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-1.5">
+                            <div class="${color} h-1.5 rounded-full transition-all" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         function updateUI() {
-            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights(); renderCalendar();
+            renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets();
         }
         function renderSummary() {
             let inc = 0, exp = 0, inv = 0;
@@ -1417,14 +1799,17 @@
             const goalsBtn = document.getElementById('addGoalBtn');
             const recBtn = document.getElementById('addRecBtn');
             const txnBtn = document.getElementById('addTxnBtn');
+            const debtBtn = document.getElementById('addDebtBtn');
 
             goalsBtn.classList.add('hidden');
             recBtn.classList.add('hidden');
             txnBtn.classList.add('hidden');
+            debtBtn.classList.add('hidden');
 
             if (id === 'goals') goalsBtn.classList.remove('hidden');
             else if (id === 'recurring') recBtn.classList.remove('hidden');
-            else txnBtn.classList.remove('hidden');
+            else if (id === 'debts') debtBtn.classList.remove('hidden');
+            else if (id === 'dashboard' || id === 'transactions' || id === 'calendar') txnBtn.classList.remove('hidden');
 
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
