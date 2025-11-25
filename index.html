@@ -475,10 +475,18 @@
 
         // INITIALIZATION
         async function initApp() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await auth.signInWithCustomToken(__initial_auth_token);
-            } else {
-                await auth.signInAnonymously();
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(__initial_auth_token);
+                } else {
+                    await auth.signInAnonymously();
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                if (error.code === 'auth/configuration-not-found' || error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed') {
+                    alert("⚠️ Firebase Setup Required ⚠️\n\nIt looks like Authentication is not enabled in your Firebase Console.\n\n1. Go to Firebase Console -> Build -> Authentication\n2. Click 'Get Started'\n3. Go to 'Sign-in method' tab\n4. Enable 'Anonymous' provider\n\nAlso, make sure to create your Firestore Database in 'Test Mode'!");
+                }
+                return;
             }
 
             auth.onAuthStateChanged((user) => {
