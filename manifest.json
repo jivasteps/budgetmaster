@@ -1,0 +1,15 @@
+{
+  "name": "ExpenseFlow Pro",
+  "short_name": "ExpenseFlow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
