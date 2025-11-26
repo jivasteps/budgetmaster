@@ -731,6 +731,79 @@
 
             familyList.innerHTML = memberHTML;
         }
+
+        // ==========================================
+    // 🌍 EXPOSE FUNCTIONS TO HTML (THE FIX)
+    // ==========================================
+    window.saveBudget = saveBudget;
+    window.openBudgetModal = openBudgetModal;
+    window.closeBudgetModal = closeBudgetModal;
+    
+    // Auth & Navigation
+    window.signInWithGoogle = signInWithGoogle;
+    window.logout = logout;
+    window.toggleTheme = toggleTheme;
+    window.showPage = showPage;
+    window.toggleSidebar = toggleSidebar;
+    
+    // Security (PIN)
+    window.enterPin = enterPin;
+    window.clearPin = clearPin;
+    window.togglePinSetup = togglePinSetup;
+    window.savePin = savePin;
+    
+    // Transaction Modal
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.setType = setType;
+    window.startVoiceInput = startVoiceInput;
+    window.editTransaction = editTransaction;
+    window.deleteTransaction = deleteTransaction;
+    
+    // Family & Shopping
+    window.openFamilyModal = openFamilyModal;
+    window.closeFamilyModal = closeFamilyModal;
+    window.createJointAccount = createJointAccount;
+    window.deleteWallet = deleteWallet;
+    window.deleteFamilyMember = deleteFamilyMember;
+    window.checkoutShoppingList = checkoutShoppingList;
+    window.deleteShoppingItem = deleteShoppingItem;
+    window.toggleShoppingItem = toggleShoppingItem;
+    
+    // Other Modals & Tools
+    window.openGoalModal = openGoalModal;
+    window.closeGoalModal = closeGoalModal;
+    window.editGoal = editGoal;
+    window.deleteGoal = deleteGoal;
+    
+    window.openDebtModal = openDebtModal;
+    window.closeDebtModal = closeDebtModal;
+    window.setDebtType = setDebtType;
+    window.deleteDebt = deleteDebt;
+    window.settleDebt = settleDebt;
+    
+    window.openRecurringModal = openRecurringModal;
+    window.closeRecurringModal = closeRecurringModal;
+    window.deleteRecurring = deleteRecurring;
+    window.payRecurring = payRecurring;
+    
+    window.openCategoryModal = openCategoryModal;
+    window.closeCategoryModal = closeCategoryModal;
+    
+    // Settings & Data
+    window.saveCurrency = saveCurrency;
+    window.exportDataJSON = exportDataJSON;
+    window.importDataJSON = importDataJSON;
+    window.exportCSV = exportCSV;
+    window.exportPDF = exportPDF;
+    
+    // Calendar & Filters
+    window.changeMonth = changeMonth;
+    window.toggleCustomDate = toggleCustomDate;
+    
+    // Split Bill Tool
+    window.calculateSplit = calculateSplit;
+    window.logSplitShare = logSplitShare;
     });
 
     window.deleteFamilyMember = async (id) => {
@@ -1939,6 +2012,7 @@
 
         if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
     }
+
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('mobileOverlay').classList.toggle('active'); }
 
     const modal = document.getElementById('transactionModal');
@@ -1966,6 +2040,7 @@
         }
         updateCategoryOptions();
     }
+
     function editTransaction(id) {
         const t = transactions.find(x => x.id === id); if (!t) return;
         document.getElementById('editId').value = t.id; setType(t.type);
@@ -1974,6 +2049,7 @@
         setTimeout(() => document.getElementById('category').value = t.category, 0);
         document.getElementById('modalTitle').textContent = 'Edit Transaction'; modal.classList.remove('hidden');
     }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault(); if (!currentUser) return;
         const editId = document.getElementById('editId').value;
@@ -1993,6 +2069,8 @@
             closeModal();
         } catch (e) { console.error(e); alert("Error saving"); } finally { btn.disabled = false; }
     });
+
+
     window.deleteTransaction = async (id) => { if (!confirm("Delete?")) return; try { await getDbRef('expenses').doc(id).delete(); } catch (e) { alert("Failed"); } };
 
     function addListener(id, event, handler) {
