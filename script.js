@@ -1762,20 +1762,73 @@
     }
 
     function renderChart() {
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-        const catTotals = {}; transactions.filter(t => t.type === 'expense').forEach(t => { if (!catTotals[t.category]) catTotals[t.category] = 0; catTotals[t.category] += Number(t.amount); });
+        const chartCanvas = document.getElementById('expenseChart');
+        if (!chartCanvas) return; // Safety check: if canvas is missing (e.g. on mobile), stop.
+
+        const ctx = chartCanvas.getContext('2d');
+        const legendEl = document.getElementById('chartLegend'); // Get the legend container
+
+        // 1. Prepare Data
+        const catTotals = {};
+        transactions.filter(t => t.type === 'expense').forEach(t => {
+            if (!catTotals[t.category]) catTotals[t.category] = 0;
+            catTotals[t.category] += Number(t.amount);
+        });
+
         const labels = Object.keys(catTotals).map(k => categoryMap[k]?.name || 'Unknown');
         const data = Object.values(catTotals);
         const bgColors = Object.keys(catTotals).map(k => categoryMap[k]?.color || '#ccc');
         const isDark = document.documentElement.classList.contains('dark');
+
+        // 2. Render Chart
         if (expenseChart) expenseChart.destroy();
-        expenseChart = new Chart(ctx, { type: 'doughnut', data: { labels: labels.length ? labels : ['No Data'], datasets: [{ data: data.length ? data : [1], backgroundColor: data.length ? bgColors : [isDark ? '#334155' : '#f1f5f9'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, cutout: '75%', plugins: { legend: { display: false } } } });
-        const total = data.reduce((a, b) => a + b, 0);
-        Object.keys(catTotals).forEach(catId => {
-            const amt = catTotals[catId], pct = total ? ((amt / total) * 100).toFixed(1) : 0;
-            const cat = categoryMap[catId] || { name: 'Unknown', color: '#ccc' };
-            legendEl.innerHTML += `<div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background-color: ${cat.color}"></div><span class="text-gray-600 dark:text-gray-300">${cat.name}</span></div><span class="font-bold text-gray-700 dark:text-gray-200 privacy-sensitive">${pct}% <span class="text-xs font-normal text-gray-400">(${formatCurrency(amt)})</span></span></div>`;
+
+        expenseChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.length ? labels : ['No Data'],
+                datasets: [{
+                    data: data.length ? data : [1],
+                    backgroundColor: data.length ? bgColors : [isDark ? '#334155' : '#f1f5f9'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '75%',
+                plugins: { legend: { display: false } } // We hide default legend to use our custom one
+            }
         });
+
+        // 3. Render Custom Legend (Only if the element exists)
+        if (legendEl) {
+            legendEl.innerHTML = '';
+            const total = data.reduce((a, b) => a + b, 0);
+
+            if (Object.keys(catTotals).length === 0) {
+                legendEl.innerHTML = '<p class="text-center text-gray-400">No expenses yet.</p>';
+            } else {
+                Object.keys(catTotals).forEach(catId => {
+                    const amt = catTotals[catId];
+                    const pct = total ? ((amt / total) * 100).toFixed(1) : 0;
+                    const cat = categoryMap[catId] || { name: 'Unknown', color: '#ccc' };
+
+                    legendEl.innerHTML += `
+                    <div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${cat.color}"></div>
+                            <span class="text-gray-600 dark:text-gray-300 font-medium">${cat.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-gray-700 dark:text-gray-200 privacy-sensitive">${pct}%</span>
+                            <span class="text-xs text-gray-400 block privacy-sensitive">${formatCurrency(amt)}</span>
+                        </div>
+                    </div>
+                `;
+                });
+            }
+        }
     }
     function renderTrendChart() {
         const ctx = document.getElementById('trendChart').getContext('2d');
