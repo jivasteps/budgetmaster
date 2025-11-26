@@ -1,7 +1,14 @@
 {
     // --- PWA INSTALLATION LOGIC ---
-    const manifest = { "name": "ExpenseFlow Pro", "short_name": "ExpenseFlow", "start_url": "/", "display": "standalone", "background_color": "#ffffff", "theme_color": "#2563eb", "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png", "sizes": "512x512", "type": "image/png" }] };
-
+    const manifest = { 
+    "name": "PocketGuard", 
+    "short_name": "PocketGuard", 
+    "start_url": "/", 
+    "display": "standalone", 
+    "background_color": "#ffffff", 
+    "theme_color": "#2563eb", 
+    "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png", "sizes": "512x512", "type": "image/png" }] 
+};
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn'); // 1. Get the button
 
@@ -104,7 +111,19 @@
             } else { showToast("Login failed: " + error.message, 'error'); }
         });
     }
-    function logout() { auth.signOut().then(() => window.location.reload()); }
+    // Find this function and update it
+    function logout() {
+        // 1. Clear Security Flags
+        sessionStorage.removeItem('unlocked');
+
+        // 2. Clear Local Settings (Optional, keeps theme preference)
+        // localStorage.removeItem('theme'); 
+
+        // 3. Sign Out
+        auth.signOut().then(() => {
+            window.location.reload();
+        });
+    }
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -512,7 +531,7 @@
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `expenseflow_backup_${new Date().toISOString().split('T')[0]}.json`;
+        const a = document.createElement('a'); a.href = url; a.download = `pocketguard_backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
     }
 
@@ -1931,7 +1950,7 @@
         const doc = new jsPDF();
 
         doc.setFontSize(18);
-        doc.text("ExpenseFlow Report", 14, 20);
+        doc.text("PocketGuard Report", 14, 20);
         doc.setFontSize(10);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
 

@@ -1,6 +1,6 @@
 {
-  "name": "ExpenseFlow Pro",
-  "short_name": "ExpenseFlow",
+  "name": "PocketGuard Pro",
+  "short_name": "PocketGuard",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
