@@ -655,63 +655,52 @@
         const familyForm = document.getElementById('familyForm');
 
         if (familyForm) {
-            console.log("✅ Family Form detected. Ready to send invites.");
-
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                const statusDiv = document.getElementById('formStatus');
+                const inviteeEmail = document.getElementById('inviteEmail').value;
+                const linkContainer = document.getElementById('inviteLinkContainer');
+                const linkInput = document.getElementById('generatedLink');
                 const btn = document.getElementById('submitBtn');
-                const inviteeEmailInput = document.getElementById('inviteEmail');
-                const inviteeEmail = inviteeEmailInput.value;
 
                 // --- CONFIGURATION ---
-                // REPLACE THIS with your actual email (The Admin)
-                const ADMIN_EMAIL = "JivaSteps@gmail.com ";
+                // Uses the current logged-in user's email if available, otherwise defaults
+                const inviterEmail = currentUser ? currentUser.email : "Admin";
+                const BASE_URL = window.location.origin; // Gets your current website URL automatically
 
-                // REPLACE THIS with your Vercel/Live URL (No trailing slash)
-                // Example: "https://budgetmaster.vercel.app"
-                const BASE_URL = 'https://budgetmaster-gamma.vercel.app'; // Automatically gets current domain
+                // --- GENERATE LINK ---
+                const link = `${BASE_URL}/accept-invite.html?inviter=${encodeURIComponent(inviterEmail)}&invitee=${encodeURIComponent(inviteeEmail)}`;
 
-                // --- 1. PREPARE DATA ---
-                const formData = new FormData(familyForm);
+                // --- UPDATE UI ---
+                linkInput.value = link;
+                linkContainer.classList.remove('hidden');
 
-                // Send copy to the invitee
-                formData.append("_cc", inviteeEmail);
-
-                // Create Dynamic Link with Query Params
-                // We pass 'inviter' and 'invitee' so the next page knows who is who
-                const link = `${BASE_URL}/accept-invite.html?inviter=${encodeURIComponent(ADMIN_EMAIL)}&invitee=${encodeURIComponent(inviteeEmail)}`;
-
-                formData.append("message", `You have been invited to join the Family Joint Account. Click here to accept: ${link}`);
-
-                // --- 2. UI UPDATES ---
-                btn.innerHTML = "Sending...";
-                btn.disabled = true;
-
-                // --- 3. SEND REQUEST ---
-                fetch(`https://formsubmit.co/ajax/${ADMIN_EMAIL}`, {
-                    method: "POST",
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("FormSubmit Response:", data);
-                        if (statusDiv) statusDiv.innerHTML = "<p style='color:green; font-weight:bold; margin-top:10px;'>✅ Invite sent successfully!</p>";
-                        familyForm.reset();
-                    })
-                    .catch(error => {
-                        console.error("FormSubmit Error:", error);
-                        if (statusDiv) statusDiv.innerHTML = "<p style='color:red; margin-top:10px;'>❌ Error sending invite.</p>";
-                    })
-                    .finally(() => {
-                        btn.innerHTML = "Send Invite";
-                        btn.disabled = false;
-                    });
+                // Visual feedback on button
+                btn.innerHTML = "<i class='fa-solid fa-check'></i> Link Generated";
+                btn.classList.add('bg-green-600');
+                setTimeout(() => {
+                    btn.innerHTML = "Generate Invite Link";
+                    btn.classList.remove('bg-green-600');
+                }, 3000);
             });
-        } else {
-            console.log("ℹ️ Family Form not found on this page. Script skipped.");
         }
+
+        // Helper to copy the link
+        window.copyInviteLink = function () {
+            const copyText = document.getElementById("generatedLink");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                navigator.clipboard.writeText(copyText.value).then(() => {
+                    showToast("Link copied to clipboard!", "success");
+                });
+            } catch (err) {
+                // Fallback for older browsers
+                document.execCommand('copy');
+                showToast("Link copied!", "success");
+            }
+        }; 
 
         // ==========================================
         // 2. CHECK FOR JOINED MEMBERS (DISPLAYING)

@@ -557,3 +557,120 @@ body {
 .dark .delete-shop-btn:hover {
     background: #450a0a;
 }
+
+/* =========================================
+   FAMILY MODAL FIXES (Dark Mode & Layout)
+   ========================================= */
+
+/* 1. Modal Background & Text Colors */
+#familyModal .bg-white {
+    /* Ensures the modal container adapts to theme */
+    background-color: #ffffff;
+    color: #1e293b;
+}
+
+.dark #familyModal .bg-white {
+    background-color: #1e293b; /* Dark Slate background */
+    color: #f8fafc; /* Light text */
+}
+
+/* 2. Labels (Fixes unreadable "Role" text) */
+#familyModal label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #475569; /* Slate-600 */
+    font-size: 0.9rem;
+}
+
+.dark #familyModal label {
+    color: #cbd5e1; /* Slate-300 (Readable on dark) */
+}
+
+/* 3. Inputs & Dropdowns (Fixes bright white inputs) */
+#familyModal input,
+#familyModal select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #334155;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none; /* Removes default OS styling for dropdowns */
+}
+
+/* Dark Mode for Inputs */
+.dark #familyModal input,
+.dark #familyModal select {
+    background-color: #334155; /* Slate-700 */
+    border-color: #475569;     /* Slate-600 */
+    color: #ffffff;
+}
+
+.dark #familyModal input:focus,
+.dark #familyModal select:focus {
+    border-color: #3b82f6; /* Blue focus ring */
+    background-color: #0f172a; /* Darker background on focus */
+}
+
+/* 4. Fix the "My Family Account" White Card */
+#familyModal .invite-card {
+    margin-top: 24px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: none; /* Remove heavy shadow inside modal */
+}
+
+.dark #familyModal .invite-card {
+    background-color: #0f172a; /* Very dark slate to contrast with modal */
+    border-color: #334155;
+}
+
+/* Card Header Fix */
+#familyModal .invite-card h3 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+.dark #familyModal .invite-card h3 {
+    color: #94a3b8;
+    border-color: #334155;
+}
+
+/* 5. Success Message Styling */
+#formStatus {
+    margin-top: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#formStatus p {
+    padding: 12px;
+    background-color: #dcfce7; /* Green-100 */
+    color: #166534; /* Green-800 */
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Dark mode for success message */
+.dark #formStatus p {
+    background-color: rgba(22, 163, 74, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
