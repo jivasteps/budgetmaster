@@ -22,7 +22,7 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     let currentUser = null;
-    let currentHouseholdId = null; // FEATURE 3: Global Household ID
+    let currentHouseholdId = null;
 
     let transactions = [];
     let goals = [];
@@ -42,6 +42,9 @@
     let userPin = null;
     let pinInput = "";
     let currentCurrency = 'INR';
+
+    // NEW: Feature Flags
+    let isPrivacyMode = false;
 
     const defaultCategoriesList = [
         { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -69,7 +72,6 @@
         { id: 'card', name: 'Credit Card' }
     ];
 
-    // FEATURE 3: DB Reference Helper
     function getDbRef(collectionName) {
         if (!currentHouseholdId) {
             console.error("No household ID found!");
@@ -114,31 +116,20 @@
             showToast("Voice input not supported in this browser", "error");
             return;
         }
-
         const recognition = new webkitSpeechRecognition();
         recognition.lang = 'en-US';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-            showToast("Listening... Speak now", "info");
-        };
-
+        recognition.onstart = () => { showToast("Listening... Speak now", "info"); };
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
             const input = document.getElementById(inputId);
             input.value = text;
             showToast("Note added via voice", "success");
         };
-
-        recognition.onerror = (event) => {
-            console.error(event.error);
-            showToast("Voice error: " + event.error, "error");
-        };
-
+        recognition.onerror = (event) => { console.error(event.error); showToast("Voice error: " + event.error, "error"); };
         recognition.start();
     }
-
 
     async function initApp() {
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -149,7 +140,6 @@
             document.getElementById('themeToggleDot').style.transform = 'translateX(0)';
         }
 
-        // FEATURE 3: Updated Auth Logic for Households
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
@@ -159,7 +149,10 @@
                 document.getElementById('view-landing').classList.add('hidden');
                 document.getElementById('app-layout').classList.remove('hidden');
 
-                // Check Security (PIN remains PERSONAL)
+                // FEATURE 6: Inject Privacy Button
+                injectPrivacyButton();
+
+                // Check Security
                 db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('security')
                     .onSnapshot(doc => {
                         if (doc.exists) {
@@ -180,14 +173,13 @@
                     currentHouseholdId = userDoc.data().householdId;
                     showToast("Synced with Household", "success");
                 } else {
-                    currentHouseholdId = user.uid; // Default to own UID
+                    currentHouseholdId = user.uid;
                     await userRef.set({
                         email: user.email,
                         householdId: currentHouseholdId,
                         joinedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
 
-                    // Initialize household
                     await db.collection('artifacts').doc(appId).collection('households').doc(currentHouseholdId).set({
                         owner: user.uid,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -196,7 +188,6 @@
                     showToast("New Household Created", "success");
                 }
 
-                // Load Currency (SHARED)
                 getDbRef('settings').doc('general')
                     .onSnapshot(doc => {
                         if (doc.exists && doc.data().currency) {
@@ -227,7 +218,169 @@
         document.getElementById('date').valueAsDate = new Date();
     }
 
-    // --- PIN LOCK LOGIC (Remains Personal) ---
+    // --- FEATURE 6: Privacy Mode ---
+    function injectPrivacyButton() {
+        // Avoid duplicates
+        if (document.getElementById('privacyBtn')) return;
+
+        const headerActions = document.querySelector('header .flex.items-center.gap-2');
+        if (headerActions) {
+            const btn = document.createElement('button');
+            btn.id = 'privacyBtn';
+            btn.className = "bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-600 dark:text-gray-300 w-10 h-9 rounded-lg transition-colors flex items-center justify-center shadow-sm";
+            btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            btn.title = "Toggle Privacy Mode";
+            btn.onclick = togglePrivacyMode;
+
+            // Insert as first item
+            headerActions.insertBefore(btn, headerActions.firstChild);
+        }
+    }
+
+    function togglePrivacyMode() {
+        isPrivacyMode = !isPrivacyMode;
+        const btn = document.getElementById('privacyBtn');
+        const body = document.body;
+
+        if (isPrivacyMode) {
+            btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            btn.classList.add('text-indigo-500', 'bg-indigo-50');
+            body.classList.add('privacy-active');
+            showToast("Privacy Mode On", "info");
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            btn.classList.remove('text-indigo-500', 'bg-indigo-50');
+            body.classList.remove('privacy-active');
+            showToast("Privacy Mode Off", "info");
+        }
+        // Trigger UI update to apply classes to specific elements if needed, 
+        // though CSS class on body handles blur automatically
+    }
+
+    // --- FEATURE 7: Smart Bill Reminders ---
+    function checkBillReminders() {
+        if (!recurringItems.length) return;
+
+        const today = new Date().getDate();
+        const dueToday = recurringItems.filter(item => item.day === today);
+
+        if (dueToday.length > 0) {
+            // Request permission
+            if ("Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+
+            dueToday.forEach(bill => {
+                // Send in-app toast
+                showToast(`Bill Due Today: ${bill.name} (${formatCurrency(bill.amount)})`, 'warning');
+
+                // Send System Notification
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("Bill Reminder 📅", {
+                        body: `${bill.name} is due today! Amount: ${formatCurrency(bill.amount)}`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/2382/2382533.png"
+                    });
+                }
+            });
+        }
+    }
+
+    // --- FEATURE 8: Spending Heatmap ---
+    function renderHeatmap() {
+        let heatmapContainer = document.getElementById('heatmapSection');
+
+        if (!heatmapContainer) {
+            const dashboardView = document.getElementById('view-dashboard');
+            if (!dashboardView) return;
+
+            // Create Wrapper
+            heatmapContainer = document.createElement('div');
+            heatmapContainer.id = 'heatmapSection';
+            heatmapContainer.className = "bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6 hidden md:block"; // Hidden on mobile to save space
+
+            heatmapContainer.innerHTML = `
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Spending Habits (Last 365 Days)</h3>
+                <div class="heatmap-container">
+                    <div id="heatmapGrid" class="heatmap-grid"></div>
+                </div>
+                <div class="flex justify-end items-center gap-2 mt-2 text-xs text-gray-400">
+                    <span>Less</span>
+                    <div class="w-3 h-3 rounded bg-gray-200 dark:bg-slate-800"></div>
+                    <div class="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-900"></div>
+                    <div class="w-3 h-3 rounded bg-emerald-400 dark:bg-emerald-700"></div>
+                    <div class="w-3 h-3 rounded bg-emerald-600 dark:bg-emerald-500"></div>
+                    <span>More</span>
+                </div>
+            `;
+
+            // Insert at bottom of dashboard
+            dashboardView.appendChild(heatmapContainer);
+        }
+
+        const grid = document.getElementById('heatmapGrid');
+        grid.innerHTML = '';
+
+        // 1. Generate data map for last 365 days
+        const dateMap = {};
+        const today = new Date();
+
+        // Pre-fill with 0
+        for (let i = 0; i < 365; i++) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            dateMap[dateStr] = 0;
+        }
+
+        // Fill with transaction data
+        let maxSpend = 0;
+        transactions.filter(t => t.type === 'expense').forEach(t => {
+            if (dateMap.hasOwnProperty(t.date)) {
+                dateMap[t.date] += t.amount;
+                if (dateMap[t.date] > maxSpend) maxSpend = dateMap[t.date];
+            }
+        });
+
+        // 2. Render Grid (Reverse loop to show past -> today)
+        // We need to align by week (Sunday start). 
+        // Simplified approach: Just 52 columns x 7 rows
+
+        // Find start date (365 days ago)
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - 365);
+
+        // Adjust to start on Sunday for clean grid
+        while (startDate.getDay() !== 0) {
+            startDate.setDate(startDate.getDate() - 1);
+        }
+
+        let currentDate = new Date(startDate);
+
+        while (currentDate <= today) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const amount = dateMap[dateStr] || 0;
+
+            // Calculate Intensity (0-4)
+            let intensity = 0;
+            if (amount > 0) {
+                const ratio = amount / (maxSpend || 1); // Avoid div by 0
+                if (ratio > 0.75) intensity = 4;
+                else if (ratio > 0.5) intensity = 3;
+                else if (ratio > 0.25) intensity = 2;
+                else intensity = 1;
+            }
+
+            const cell = document.createElement('div');
+            cell.className = `heatmap-cell heat-${intensity}`;
+            cell.title = `${dateStr}: ${formatCurrency(amount)}`;
+
+            grid.appendChild(cell);
+
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+
+    // --- PIN LOCK ---
     function enterPin(num) {
         if (pinInput.length < 4) {
             pinInput += num;
@@ -312,6 +465,9 @@
 
     // --- CURRENCY & DATA MGMT ---
     function formatCurrency(num) {
+        // PRIVACY CHECK
+        if (isPrivacyMode) return '****';
+
         const symbolMap = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' };
         const symbol = symbolMap[currentCurrency] || '₹';
         const locale = currentCurrency === 'INR' ? 'en-IN' : 'en-US';
@@ -321,10 +477,8 @@
     async function saveCurrency() {
         const val = document.getElementById('currencySelect').value;
         currentCurrency = val;
-        // Shared Currency Setting
         await getDbRef('settings').doc('general').set({ currency: val }, { merge: true });
         updateUI();
-
         document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' }[val]);
     }
 
@@ -357,7 +511,6 @@
                         if (!items) return;
                         const batch = db.batch();
                         let count = 0;
-                        // Use getDbRef to import into shared household
                         const collRef = getDbRef(collName);
                         if (!collRef) return;
 
@@ -448,7 +601,7 @@
                                 ${m.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-800 dark:text-white">${m.name}</h4>
+                                <h4 class="font-bold text-gray-800 dark:text-white privacy-sensitive">${m.name}</h4>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">${m.role}</p>
                             </div>
                         </div>
@@ -485,13 +638,13 @@
                         <div class="relative z-10 flex justify-between items-start mb-6">
                             <div>
                                 <p class="text-xs text-indigo-200 font-medium uppercase tracking-wider mb-1">Joint Account</p>
-                                <h3 class="text-xl font-bold">${w.name}</h3>
+                                <h3 class="text-xl font-bold privacy-sensitive">${w.name}</h3>
                             </div>
                             <i class="fa-solid fa-building-columns text-indigo-300 text-xl"></i>
                         </div>
                         <div class="relative z-10">
                             <p class="text-sm text-indigo-200 mb-1">Current Balance</p>
-                            <h2 class="text-3xl font-bold tracking-tight">${formatCurrency(balance)}</h2>
+                            <h2 class="text-3xl font-bold tracking-tight privacy-sensitive">${formatCurrency(balance)}</h2>
                         </div>
                         <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                         <button onclick="deleteWallet('${w.id}')" class="absolute top-4 right-4 text-indigo-200 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash"></i></button>
@@ -639,8 +792,8 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${isLent ? 'You Lent' : 'You Borrowed'}</p>
-                                <h4 class="text-lg font-bold text-gray-800 dark:text-white">${d.person}</h4>
-                                <p class="text-sm font-mono font-medium ${color}">${formatCurrency(d.amount)}</p>
+                                <h4 class="text-lg font-bold text-gray-800 dark:text-white privacy-sensitive">${d.person}</h4>
+                                <p class="text-sm font-mono font-medium ${color} privacy-sensitive">${formatCurrency(d.amount)}</p>
                             </div>
                         </div>
                         <div class="mt-4 flex justify-between items-center">
@@ -724,7 +877,7 @@
                                 <span class="${strikeClass}">${item.name}</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="font-mono text-sm text-gray-600 dark:text-gray-300">${formatCurrency(item.cost)}</span>
+                                <span class="font-mono text-sm text-gray-600 dark:text-gray-300 privacy-sensitive">${formatCurrency(item.cost)}</span>
                                 <button onclick="deleteShoppingItem('${item.id}')" class="text-gray-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
@@ -785,6 +938,8 @@
             recurringItems = [];
             snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
             renderRecurring();
+            // Check reminders whenever data updates
+            checkBillReminders();
         });
     }
     function renderRecurring() {
@@ -797,7 +952,6 @@
 
         recurringItems.forEach(item => {
             const cat = categoryMap[item.category] || { name: 'Unknown', icon: 'fa-rotate', color: '#ccc' };
-            const isDue = item.day <= today;
 
             grid.innerHTML += `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
@@ -805,14 +959,14 @@
                         <div class="flex items-center gap-3 mb-3">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background-color:${cat.color}"><i class="fa-solid ${cat.icon}"></i></div>
                             <div>
-                                <h4 class="font-bold text-gray-800 dark:text-white">${item.name}</h4>
+                                <h4 class="font-bold text-gray-800 dark:text-white privacy-sensitive">${item.name}</h4>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">${cat.name}</p>
                             </div>
                         </div>
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-xs text-gray-400 uppercase">Amount</p>
-                                <p class="text-lg font-bold text-gray-800 dark:text-white">${formatCurrency(item.amount)}</p>
+                                <p class="text-lg font-bold text-gray-800 dark:text-white privacy-sensitive">${formatCurrency(item.amount)}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-xs text-gray-400">Due Day: ${item.day}</p>
@@ -869,6 +1023,8 @@
         grid.innerHTML = '';
         const year = currentCalendarDate.getFullYear();
         const month = currentCalendarDate.getMonth();
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
 
         document.getElementById('calendarTitle').textContent = currentCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -882,10 +1038,30 @@
             const dayTxns = transactions.filter(t => t.date === dateStr && t.type === 'expense');
             const total = dayTxns.reduce((sum, t) => sum + Number(t.amount), 0);
 
+            // Future projections
+            let projectedTotal = 0;
+            let recurringNames = [];
+            const dateObj = new Date(year, month, day);
+            if (dateObj > todayDate) {
+                recurringItems.forEach(item => {
+                    if (item.day === day) {
+                        projectedTotal += item.amount;
+                        recurringNames.push(item.name);
+                    }
+                });
+            }
+
             let content = '';
             if (total > 0) {
                 const colorClass = total > (monthlyBudget / 30) ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600';
-                content = `<div class="mt-1 text-xs font-bold px-1 rounded ${colorClass}">${formatCurrency(total)}</div>`;
+                content += `<div class="mt-1 text-[10px] font-bold px-1 rounded ${colorClass} privacy-sensitive">${formatCurrency(total)}</div>`;
+            }
+            if (projectedTotal > 0) {
+                content += `
+                    <div class="mt-1 text-[10px] font-bold px-1 rounded bg-indigo-50 text-indigo-400 border border-dashed border-indigo-200 privacy-sensitive" title="Expected: ${recurringNames.join(', ')}">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i>${formatCurrency(projectedTotal)}
+                    </div>
+                `;
             }
 
             grid.innerHTML += `
@@ -1014,7 +1190,7 @@
         // Calculate Average Daily Spend (ADS)
         const dailyAverage = today > 0 ? expenses / today : expenses;
 
-        // Forecast: Current Spent + (Average * Days Left)
+        // Forecast
         const projectedSpend = expenses + (dailyAverage * daysRemaining);
         const budget = monthlyBudget || 0;
 
@@ -1141,6 +1317,11 @@
         document.getElementById('nwInvest').textContent = formatCurrency(invested);
         document.getElementById('nwSavings').textContent = formatCurrency(savings);
         document.getElementById('nwDebt').textContent = formatCurrency(debt);
+
+        // Apply privacy if active
+        if (isPrivacyMode) {
+            document.querySelectorAll('.privacy-sensitive').forEach(el => el.classList.add('privacy-sensitive'));
+        }
     }
 
     // NEW: Category Budget Calculation
@@ -1188,7 +1369,6 @@
     function renderGamification() {
         let badgeContainer = document.getElementById('gamificationSection');
 
-        // Create container if it doesn't exist
         if (!badgeContainer) {
             const dashboardView = document.getElementById('view-dashboard');
             if (!dashboardView) return;
@@ -1197,7 +1377,6 @@
             badgeContainer.id = 'gamificationSection';
             badgeContainer.className = "mb-6 grid grid-cols-2 md:grid-cols-4 gap-4";
 
-            // Insert after the Health Score card
             dashboardView.insertBefore(badgeContainer, dashboardView.children[1]);
         }
 
@@ -1289,9 +1468,11 @@
     function updateUI() {
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
         calculateFinancialHealth();
-
-        // FEATURE 5 Call
         renderGamification();
+        renderHeatmap(); // FEATURE 8
+
+        // Re-apply privacy mode classes
+        if (isPrivacyMode) document.body.classList.add('privacy-active');
     }
     function renderSummary() {
         let inc = 0, exp = 0, inv = 0;
@@ -1305,6 +1486,12 @@
         document.getElementById('totalExpense').textContent = formatCurrency(exp);
         document.getElementById('totalInvestment').textContent = formatCurrency(inv);
         document.getElementById('totalBalance').textContent = formatCurrency(inc - exp - inv);
+
+        // Add Privacy Class
+        document.getElementById('totalIncome').classList.add('privacy-sensitive');
+        document.getElementById('totalExpense').classList.add('privacy-sensitive');
+        document.getElementById('totalInvestment').classList.add('privacy-sensitive');
+        document.getElementById('totalBalance').classList.add('privacy-sensitive');
     }
     function renderFullList() {
         const list = document.getElementById('fullTransactionList'); list.innerHTML = '';
@@ -1365,11 +1552,11 @@
                             <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-bullseye"></i></div>
                             <button onclick="editGoal('${g.id}')" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button>
                         </div>
-                        <h4 class="font-bold text-gray-800 dark:text-white text-lg mb-1">${g.name}</h4>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Target: ${formatCurrency(g.target)}</p>
+                        <h4 class="font-bold text-gray-800 dark:text-white text-lg mb-1 privacy-sensitive">${g.name}</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 privacy-sensitive">Target: ${formatCurrency(g.target)}</p>
                         <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 mb-2"><div class="bg-indigo-500 h-2 rounded-full transition-all" style="width: ${pct}%"></div></div>
                         <div class="flex justify-between items-center text-sm">
-                            <span class="font-bold text-indigo-600 dark:text-indigo-400">${formatCurrency(g.saved)}</span>
+                            <span class="font-bold text-indigo-600 dark:text-indigo-400 privacy-sensitive">${formatCurrency(g.saved)}</span>
                             <span class="text-gray-400">${pct.toFixed(0)}%</span>
                         </div>
                         <button onclick="deleteGoal('${g.id}')" class="absolute top-6 right-10 opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-600 transition-opacity"><i class="fa-solid fa-trash"></i></button>
@@ -1423,7 +1610,7 @@
         Object.keys(catTotals).forEach(catId => {
             const amt = catTotals[catId], pct = total ? ((amt / total) * 100).toFixed(1) : 0;
             const cat = categoryMap[catId] || { name: 'Unknown', color: '#ccc' };
-            legendEl.innerHTML += `<div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background-color: ${cat.color}"></div><span class="text-gray-600 dark:text-gray-300">${cat.name}</span></div><span class="font-bold text-gray-700 dark:text-gray-200">${pct}% <span class="text-xs font-normal text-gray-400">(${formatCurrency(amt)})</span></span></div>`;
+            legendEl.innerHTML += `<div class="flex justify-between items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background-color: ${cat.color}"></div><span class="text-gray-600 dark:text-gray-300">${cat.name}</span></div><span class="font-bold text-gray-700 dark:text-gray-200 privacy-sensitive">${pct}% <span class="text-xs font-normal text-gray-400">(${formatCurrency(amt)})</span></span></div>`;
         });
     }
     function renderTrendChart() {
@@ -1520,14 +1707,14 @@
         const noteDisplay = noteText.replace(/(#\w+)/g, '<span class="text-blue-500 dark:text-blue-400 font-medium">$1</span>');
 
         if (isCompact) {
-            return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${cat.name}</p><p class="text-xs text-gray-400 truncate">${noteDisplay}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color}">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
+            return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer group" onclick="editTransaction('${t.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${bg} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${cat.icon}"></i></div><div class="min-w-0"><p class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate privacy-sensitive">${cat.name}</p><p class="text-xs text-gray-400 truncate privacy-sensitive">${noteDisplay}</p></div></div><div class="text-right flex-shrink-0"><p class="text-sm font-bold ${color} privacy-sensitive">${sign}${formatCurrency(t.amount)}</p><p class="text-xs text-gray-400">${dateDisplay}</p></div></div>`;
         } else {
             return `<tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700 group border-b border-gray-50 dark:border-slate-800 last:border-0">
-                    <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-xs"><i class="fa-solid ${cat.icon}"></i></div><span class="font-medium text-gray-700 dark:text-gray-300">${cat.name}</span></div></td>
+                    <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${bg} flex items-center justify-center text-xs"><i class="fa-solid ${cat.icon}"></i></div><span class="font-medium text-gray-700 dark:text-gray-300 privacy-sensitive">${cat.name}</span></div></td>
                     <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">${dateDisplay}</td>
-                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs font-medium">${wallet.name}</td>
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="${t.note}">${noteDisplay}</td>
-                    <td class="px-6 py-4 text-right font-mono font-medium ${color}">${sign}${formatCurrency(t.amount)}</td>
+                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs font-medium privacy-sensitive">${wallet.name}</td>
+                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-xs truncate privacy-sensitive" title="${t.note}">${noteDisplay}</td>
+                    <td class="px-6 py-4 text-right font-mono font-medium ${color} privacy-sensitive">${sign}${formatCurrency(t.amount)}</td>
                     <td class="px-6 py-4 text-center"><div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editTransaction('${t.id}')" class="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg"><i class="fa-solid fa-trash"></i></button></div></td>
                 </tr>`;
         }
