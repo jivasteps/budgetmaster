@@ -640,54 +640,70 @@
     }
 
     const familyModal = document.getElementById('familyModal');
-    function openFamilyModal() { document.getElementById('familyForm').reset(); familyModal.classList.remove('hidden'); }
+    function openFamilyModal() {
+        document.getElementById('familyForm').reset(); 
+        familyModal.classList.remove('hidden');
+    }
     function closeFamilyModal() { familyModal.classList.add('hidden'); }
 
     // --- INVITE MEMBER (WRITES TO FIRESTORE FOR CLOUD FUNCTION) ---
-    document.getElementById('familyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('famName').value;
-        const email = document.getElementById('famEmail').value;
-        const role = document.getElementById('famRole').value;
-        const access = document.getElementById('famAccess').value;
+  document.addEventListener("DOMContentLoaded", function() {
 
-        const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${currentHouseholdId}`;
+    // 1. Get the form element
+    const familyForm = document.getElementById('familyForm');
+       // 2. CRITICAL FIX: The "if (familyForm)" check stops the crash
+    if (familyForm) {
+        
+        console.log("Family Form found, attaching listener..."); // Debug
 
-        const data = {
-            name: name,
-            role: role,
-            access: access,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+        familyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        try {
-            // 1. Add member locally
-            await getDbRef('family').add(data);
+            const statusDiv = document.getElementById('formStatus');
+            const btn = document.getElementById('submitBtn');
+            const inviteeEmail = document.getElementById('inviteEmail').value;
+            
+            // Prepare Data for FormSubmit
+            const formData = new FormData(familyForm);
+            
+            // Add the CC field so the family member gets the email
+            formData.append("_cc", inviteeEmail); 
+            
+            // Create the Invite Link
+            // CHANGE "localhost:3000" to your Vercel URL (e.g., https://budgetmaster-gamma.vercel.app)
+            const link = `https://budgetmaster-gamma.vercel.app/accept-invite.html?inviter=${encodeURIComponent("JivaSteps@gmail.com")}`;
+            
+            formData.append("message", `You have been invited to join the Family Account. Click here to accept: ${link}`);
 
-            // 2. Queue Email for Backend (Nodemailer)
-            // Note: This writes to a root-level collection 'mail_queue' so the backend can see it easily
-            await db.collection('mail_queue').add({
-                to_email: email,
-                to_name: name,
-                from_name: currentUser.displayName || "ExpenseFlow User",
-                invite_link: inviteLink,
-                status: 'pending',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            // UI Loading State
+            btn.innerHTML = "Sending...";
+            btn.disabled = true;
+
+            // Send via FormSubmit (No Backend Required)
+            fetch("https://formsubmit.co/ajax/JivaSteps@gmail.com", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (statusDiv) statusDiv.innerHTML = "<p style='color:green; font-weight:bold;'>✅ Invite sent successfully!</p>";
+                familyForm.reset();
+            })
+            .catch(error => {
+                console.error(error);
+                if (statusDiv) statusDiv.innerHTML = "<p style='color:red;'>❌ Error sending invite.</p>";
+            })
+            .finally(() => {
+                btn.innerHTML = "Send Invite";
+                btn.disabled = false;
             });
+        });
 
-            // 3. Fallback Copy
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(inviteLink).then(() => {
-                    showToast("Link copied to clipboard!", "info");
-                });
-            }
-
-            closeFamilyModal();
-            showToast("Invite queued. Sending email...", "success");
-        } catch (err) {
-            console.error(err);
-            showToast("Error queuing invite", "error");
-        }
+    } else {
+        // This log confirms the script didn't crash, it just skipped the form safely
+        console.log("Family Form not found on this page. Script skipped safely.");
+    }
     });
 
     window.deleteFamilyMember = async (id) => {
@@ -1954,5 +1970,5 @@
     addListener('endDate', 'change', renderFullList);
 
     initApp();
-    
+
 }

@@ -1157,90 +1157,31 @@
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
                             class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <form id="inviteForm">
-        <input type="hidden" name="_subject" value="New Family Account Invitation">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        
-        <div class="form-group">
-            <label for="inviteEmail">Family Member Email</label>
-            <input type="email" id="inviteEmail" name="email" placeholder="spouse@example.com" required>
-        </div>
+                <form id="familyForm">
+                    <input type="hidden" name="_subject" value="New Family Account Invitation">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_captcha" value="false">
 
-        <div class="form-group">
-            <label for="role">Role</label>
-            <select name="role" id="role">
-                <option value="JOINT_OWNER">Joint Owner</option>
-                <option value="VIEWER">Viewer (Read Only)</option>
-            </select>
-        </div>
+                    <div class="form-group">
+                        <label for="inviteEmail">Family Member Email</label>
+                        <input type="email" id="inviteEmail" name="email" placeholder="spouse@example.com" required>
+                    </div>
 
-        <button type="submit" id="submitBtn">Send Invite</button>
-    </form>
-    
-    <div id="formStatus"></div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select name="role" id="role">
+                            <option value="JOINT_OWNER">Joint Owner</option>
+                            <option value="VIEWER">Viewer (Read Only)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Send Invite</button>
+                </form>
+
+                <div id="formStatus"></div>
             </div>
         </div>
     </div>
-
-   <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    // 1. Get the element
-   const inviteForm = document.getElementById('inviteForm');
-    const statusDiv = document.getElementById('formStatus');
-
-    // 2. Debug Log (Check your console to see this!)
-    console.log("Is inviteForm found?", inviteForm);
-
-    // 2. SAFETY CHECK: Only run if the form actually exists on this page
-    if (inviteForm) { 
-        
-        inviteForm.addEventListener('submit', function(e){
-            e.preventDefault(); 
-
-            const formData = new FormData(form);
-            const inviteeEmail = document.getElementById('inviteEmail').value;
-
-            // --- Your Config & Link Logic ---
-            formData.append("_cc", inviteeEmail); 
-            formData.append("_autoresponse", "You have been invited to join the family account!");
-
-            const link = `http://localhost:3000/accept-invite.html?inviter=${encodeURIComponent("JivaSteps@gmail.com")}`;
-            formData.append("message", `You have been invited to a Joint Account. Click here to join: ${link}`);
-
-            // --- UI Updates ---
-            const btn = document.getElementById('submitBtn');
-            btn.innerHTML = "Sending...";
-            btn.disabled = true;
-
-            // --- Fetch Call ---
-            fetch("https://formsubmit.co/ajax/JivaSteps@gmail.com", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if(statusDiv) statusDiv.innerHTML = "<p style='color:green'>✅ Invite sent successfully!</p>";
-                form.reset();
-            })
-            .catch(error => {
-                console.log(error);
-                if(statusDiv) statusDiv.innerHTML = "<p style='color:red'>❌ Something went wrong.</p>";
-            })
-            .finally(() => {
-                btn.innerHTML = "Send Invite";
-                btn.disabled = false;
-            });
-            console.log("Form submitted!"); // Test log
-        });
-
-    } else {
-        // Optional: Log this to know the script skipped this page
-        console.log("Invite form not found on this page - skipping script.");
-    }
-});
-</script>
     <script src="script.js"></script>
 </body>
 
