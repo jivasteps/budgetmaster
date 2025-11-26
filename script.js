@@ -285,6 +285,7 @@
         document.getElementById('date').valueAsDate = new Date();
 
         // FORCE RESET: Hide all views and show only Dashboard on startup
+        // FIXED: Now looks inside #mainScroll
         document.querySelectorAll('#mainScroll > div[id^="view-"]').forEach(el => {
             el.classList.add('hidden');
         });
@@ -1907,7 +1908,7 @@
 
     function showPage(id) {
         // 1. Hide all views safely
-        // FIXED: Changed selector from 'main > div' to '#mainScroll > div'
+        // FIXED: Now looks inside #mainScroll instead of main
         const views = document.querySelectorAll('#mainScroll > div[id^="view-"]');
         views.forEach(el => el.classList.add('hidden'));
 
@@ -1940,16 +1941,14 @@
             activeNav.classList.add('bg-blue-600', 'text-white');
         }
 
-        // 5. Handle Action Buttons (THE FIX: Safe Show/Hide)
+        // 5. Handle Action Buttons (Safe Show/Hide)
         const goalsBtn = document.getElementById('addGoalBtn');
         const recBtn = document.getElementById('addRecBtn');
         const txnBtn = document.getElementById('addTxnBtn');
         const debtBtn = document.getElementById('addDebtBtn');
         const familyBtn = document.getElementById('addFamilyBtn');
 
-        // Helper: Safely hide a button if it exists
         const safeHide = (btn) => { if (btn) btn.classList.add('hidden'); };
-        // Helper: Safely show a button if it exists
         const safeShow = (btn) => { if (btn) btn.classList.remove('hidden'); };
 
         // Hide all first
@@ -1974,7 +1973,6 @@
 
         // 7. Mobile Sidebar Logic (Close sidebar after click)
         const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('mobileOverlay');
 
         // Check if we are on mobile AND sidebar is open
         if (window.innerWidth < 768 && sidebar && sidebar.classList.contains('open')) {
