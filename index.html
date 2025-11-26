@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExpenseFlow Pro</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -21,33 +20,26 @@
         }
     </script>
 
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- PDF Libs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
     <link rel="manifest" id="manifest-placeholder">
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body
     class="bg-gray-50 text-gray-800 dark:bg-slate-900 dark:text-gray-100 h-screen overflow-hidden transition-colors duration-300">
 
-    <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- LOCK SCREEN -->
     <div id="view-lock"
         class="hidden fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center text-white">
         <div class="mb-8 flex flex-col items-center">
@@ -82,7 +74,6 @@
         </div>
     </div>
 
-    <!-- LOGIN -->
     <div id="view-landing"
         class="hidden w-full h-full flex flex-col items-center justify-center bg-white dark:bg-slate-900">
         <div class="text-center space-y-6 max-w-md px-6 fade-in">
@@ -104,11 +95,9 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div id="app-layout" class="hidden flex h-full w-full">
         <div id="mobileOverlay" class="overlay" onclick="toggleSidebar()"></div>
 
-        <!-- Sidebar -->
         <aside id="sidebar"
             class="sidebar bg-slate-900 dark:bg-slate-950 text-white w-64 flex-shrink-0 flex flex-col h-full shadow-2xl border-r border-slate-800">
             <div class="p-6 flex items-center justify-between">
@@ -198,7 +187,6 @@
             </div>
         </aside>
 
-        <!-- Content -->
         <main
             class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-slate-900 transition-colors duration-300 relative">
             <header
@@ -235,10 +223,8 @@
 
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="mainScroll">
 
-                <!-- Dashboard -->
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto pb-10">
 
-                    <!-- NEW: Financial Health Score Card -->
                     <div
                         class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
                         <div class="absolute right-0 bottom-0 p-4 opacity-10"><i
@@ -278,9 +264,7 @@
                         </div>
                     </div>
 
-                    <!-- Budget & Insights Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Budget -->
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between">
                             <div class="flex justify-between items-end mb-2">
@@ -301,7 +285,6 @@
                             </div>
                             <p id="budgetMessage" class="text-xs text-gray-400 mt-2">Set a budget to track progress.</p>
                         </div>
-                        <!-- Insights -->
                         <div
                             class="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
                             <div class="absolute right-0 top-0 p-4 opacity-10"><i
@@ -328,16 +311,13 @@
                         </div>
                     </div>
 
-                    <!-- Category Budgets Section -->
                     <div id="categoryBudgetsSection"
                         class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                         <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Category Budgets</h3>
                         <div id="categoryBudgetsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Injected via JS -->
                         </div>
                     </div>
 
-                    <!-- Summary Cards -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
@@ -371,7 +351,6 @@
                         </div>
                     </div>
 
-                    <!-- Charts & Recent -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-1 space-y-6">
                             <div
@@ -382,7 +361,6 @@
                             </div>
                         </div>
                         <div class="lg:col-span-2 space-y-6">
-                            <!-- Comparison Chart (NEW) -->
                             <div
                                 class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Monthly Comparison</h3>
@@ -415,7 +393,6 @@
                     </div>
                 </div>
 
-                <!-- Family & Joint View (NEW) -->
                 <div id="view-family" class="hidden max-w-7xl mx-auto space-y-8 pb-10">
                     <div
                         class="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg">
@@ -434,12 +411,10 @@
                         </div>
                     </div>
 
-                    <!-- Joint Accounts Section -->
                     <div>
                         <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i
                                 class="fa-solid fa-wallet text-indigo-500"></i> Joint Accounts</h3>
                         <div id="jointAccountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Injected JS -->
                         </div>
                         <div id="emptyJoint"
                             class="hidden py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-gray-300 dark:border-slate-700">
@@ -447,12 +422,10 @@
                         </div>
                     </div>
 
-                    <!-- Family Members Section -->
                     <div>
                         <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i
                                 class="fa-solid fa-user-group text-pink-500"></i> Family Members</h3>
                         <div id="familyMembersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Injected JS -->
                         </div>
                         <div id="emptyFamily"
                             class="hidden py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-gray-300 dark:border-slate-700">
@@ -461,7 +434,6 @@
                     </div>
                 </div>
 
-                <!-- Net Worth View (NEW) -->
                 <div id="view-networth" class="hidden max-w-7xl mx-auto pb-10">
                     <div
                         class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl shadow-xl p-8 text-white mb-8 relative overflow-hidden">
@@ -541,7 +513,6 @@
                     </div>
                 </div>
 
-                <!-- Shopping List View (NEW) -->
                 <div id="view-shopping" class="hidden max-w-4xl mx-auto pb-10">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -571,7 +542,6 @@
                             </form>
                         </div>
                         <div id="shoppingList" class="divide-y divide-gray-100 dark:divide-slate-700">
-                            <!-- Items injected here -->
                         </div>
                         <div id="emptyShopping" class="hidden py-12 text-center text-gray-400">
                             <p>List is empty.</p>
@@ -579,7 +549,6 @@
                     </div>
                 </div>
 
-                <!-- Transactions View -->
                 <div id="view-transactions" class="hidden max-w-6xl mx-auto pb-10">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -605,7 +574,6 @@
                                             class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <option value="all">All Wallets</option>
                                         </select>
-                                        <!-- New Tag Filter -->
                                         <select id="filterTag"
                                             class="px-3 py-2 bg-white dark:bg-slate-700 dark:text-white border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <option value="all">All Tags</option>
@@ -668,9 +636,6 @@
                     </div>
                 </div>
 
-                <!-- ... existing calendar, recurring, goals, debts, tools, settings views ... -->
-
-                <!-- Calendar View -->
                 <div id="view-calendar" class="hidden max-w-7xl mx-auto pb-10">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden p-6">
@@ -699,7 +664,6 @@
                     </div>
                 </div>
 
-                <!-- Recurring View -->
                 <div id="view-recurring" class="hidden max-w-7xl mx-auto pb-10">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurringGrid"></div>
                     <div id="emptyRecurring"
@@ -711,7 +675,6 @@
                     </div>
                 </div>
 
-                <!-- Goals View -->
                 <div id="view-goals" class="hidden max-w-7xl mx-auto pb-10">
                     <div id="goalsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                     <div id="emptyGoals" class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
@@ -725,7 +688,6 @@
                     </div>
                 </div>
 
-                <!-- Debts View -->
                 <div id="view-debts" class="hidden max-w-7xl mx-auto pb-10">
                     <div id="debtsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                     <div id="emptyDebts" class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
@@ -739,7 +701,6 @@
                     </div>
                 </div>
 
-                <!-- Tools View -->
                 <div id="view-tools" class="hidden max-w-3xl mx-auto pb-10">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -788,9 +749,7 @@
                     </div>
                 </div>
 
-                <!-- Settings View -->
                 <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6 pb-10">
-                    <!-- General Settings -->
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                         <div class="p-6 border-b border-gray-100 dark:border-slate-700">
@@ -815,7 +774,6 @@
                         </div>
                     </div>
 
-                    <!-- Data Management -->
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                         <div class="p-6 border-b border-gray-100 dark:border-slate-700">
@@ -839,7 +797,6 @@
                         </div>
                     </div>
 
-                    <!-- Security Settings -->
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                         <div class="p-6 border-b border-gray-100 dark:border-slate-700">
@@ -877,7 +834,6 @@
 
             </div>
 
-            <!-- FOOTER -->
             <footer
                 class="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 py-4 text-center shrink-0">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Designed by <span
@@ -886,7 +842,6 @@
         </main>
     </div>
 
-    <!-- Transaction Modal -->
     <div id="transactionModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
@@ -948,7 +903,6 @@
                             <input type="text" id="note"
                                 class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="What was this for?">
-                            <!-- NEW: Voice Input Button -->
                             <button type="button" onclick="startVoiceInput('note')"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500">
                                 <i class="fa-solid fa-microphone"></i>
@@ -963,7 +917,6 @@
         </div>
     </div>
 
-    <!-- Recurring Modal -->
     <div id="recurringModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRecurringModal()">
         </div>
@@ -1012,7 +965,6 @@
         </div>
     </div>
 
-    <!-- Add/Edit Category Modal (Updated for Budget) -->
     <div id="categoryModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeCategoryModal()">
         </div>
@@ -1055,7 +1007,6 @@
                                 placeholder="fa-tag" value="fa-tag">
                         </div>
                     </div>
-                    <!-- NEW: Category Budget -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Monthly Limit
                             (Optional)</label>
@@ -1075,7 +1026,6 @@
         </div>
     </div>
 
-    <!-- Budget Modal -->
     <div id="budgetModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBudgetModal()"></div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-4">
@@ -1098,7 +1048,6 @@
         </div>
     </div>
 
-    <!-- Goal Modal -->
     <div id="goalModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeGoalModal()"></div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
@@ -1148,7 +1097,6 @@
         </div>
     </div>
 
-    <!-- Debt Modal (NEW) -->
     <div id="debtModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDebtModal()"></div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
@@ -1199,14 +1147,13 @@
         </div>
     </div>
 
-    <!-- Family Member Modal (NEW) -->
     <div id="familyModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeFamilyModal()">
         </div>
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl">
                 <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Add Family Member</h3>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Invite Family Member</h3>
                     <button onclick="closeFamilyModal()"
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
                             class="fa-solid fa-xmark text-xl"></i></button>
@@ -1217,6 +1164,13 @@
                         <input type="text" id="famName" required
                             class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                             placeholder="e.g. Sarah">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Email
+                            Address</label>
+                        <input type="email" id="famEmail" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="partner@example.com">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Role</label>
@@ -1238,8 +1192,8 @@
                         </select>
                     </div>
                     <button type="submit"
-                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg">Add
-                        Member</button>
+                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg">Send
+                        Invite & Add</button>
                 </form>
             </div>
         </div>
