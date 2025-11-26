@@ -1554,7 +1554,6 @@
         });
     }
 
-    // FEATURE 8: Heatmap
     function calculateSplit() {
         const total = parseFloat(document.getElementById('splitTotal').value) || 0;
         const people = parseInt(document.getElementById('splitPeople').value) || 1;
@@ -2027,7 +2026,6 @@
                 if (window.renderChart) renderChart();
                 if (window.renderTrendChart) renderTrendChart();
                 if (window.renderComparisonChart) renderComparisonChart();
-                if (window.renderHeatmap) renderHeatmap();
             }, 100);
         }
 
