@@ -31,7 +31,7 @@
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
-    <link rel="manifest" id="manifest-placeholder">
+    <link rel="manifest" href="site.webmanifest">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -1184,57 +1184,59 @@
         </div>
     </div>
 
-    <script>
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    // 1. Get the element
     const form = document.getElementById('inviteForm');
     const statusDiv = document.getElementById('formStatus');
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-
-        const formData = new FormData(form);
-        const inviteeEmail = document.getElementById('inviteEmail').value;
+    // 2. SAFETY CHECK: Only run if the form actually exists on this page
+    if (form) { 
         
-        // --- 1. EXISTING CONFIG ---
-        formData.append("_cc", inviteeEmail); 
-        formData.append("_autoresponse", "You have been invited to join the family account!");
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); 
 
-        // ============================================================
-        // 👇 ADD YOUR 2 NEW LINES HERE 👇
-        // ============================================================
-        
-        // Line 1: Create the link with the inviter's email attached
-        const link = `https://budgetmaster-gamma.vercel.app/accept-invite.html?inviter=${encodeURIComponent("JivaSteps@gmail.com")}`;
-        
-        // Line 2: Attach this link to the message body so the user can click it
-        formData.append("message", `You have been invited to a Joint Account. Click here to join: ${link}`);
-        
-        // ============================================================
+            const formData = new FormData(form);
+            const inviteeEmail = document.getElementById('inviteEmail').value;
 
+            // --- Your Config & Link Logic ---
+            formData.append("_cc", inviteeEmail); 
+            formData.append("_autoresponse", "You have been invited to join the family account!");
 
-        // --- 2. EXISTING FETCH CALL ---
-        const btn = document.getElementById('submitBtn');
-        btn.innerHTML = "Sending...";
-        btn.disabled = true;
+            const link = `http://localhost:3000/accept-invite.html?inviter=${encodeURIComponent("JivaSteps@gmail.com")}`;
+            formData.append("message", `You have been invited to a Joint Account. Click here to join: ${link}`);
 
-        fetch("https://formsubmit.co/ajax/JivaSteps@gmail.com", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            statusDiv.innerHTML = "<p style='color:green'>✅ Invite sent successfully!</p>";
-            form.reset();
-        })
-        .catch(error => {
-            console.log(error);
-            statusDiv.innerHTML = "<p style='color:red'>❌ Something went wrong.</p>";
-        })
-        .finally(() => {
-            btn.innerHTML = "Send Invite";
-            btn.disabled = false;
+            // --- UI Updates ---
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = "Sending...";
+            btn.disabled = true;
+
+            // --- Fetch Call ---
+            fetch("https://formsubmit.co/ajax/JivaSteps@gmail.com", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if(statusDiv) statusDiv.innerHTML = "<p style='color:green'>✅ Invite sent successfully!</p>";
+                form.reset();
+            })
+            .catch(error => {
+                console.log(error);
+                if(statusDiv) statusDiv.innerHTML = "<p style='color:red'>❌ Something went wrong.</p>";
+            })
+            .finally(() => {
+                btn.innerHTML = "Send Invite";
+                btn.disabled = false;
+            });
+            console.log("Form submitted!"); // Test log
         });
-    });
+
+    } else {
+        // Optional: Log this to know the script skipped this page
+        console.log("Invite form not found on this page - skipping script.");
+    }
 </script>
     <script src="script.js"></script>
 </body>
