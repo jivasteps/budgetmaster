@@ -283,6 +283,25 @@
             try { await auth.signInWithCustomToken(__initial_auth_token); } catch (e) { }
         }
         document.getElementById('date').valueAsDate = new Date();
+
+        // FORCE RESET: Hide all views and show only Dashboard on startup
+        document.querySelectorAll('main > div[id^="view-"]').forEach(el => {
+            el.classList.add('hidden');
+        });
+
+        const dashboard = document.getElementById('view-dashboard');
+        if (dashboard) dashboard.classList.remove('hidden');
+
+        // Reset Navigation Active State
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.remove('bg-blue-600', 'text-white');
+            el.classList.add('text-slate-400');
+        });
+        const homeNav = document.getElementById('nav-dashboard');
+        if (homeNav) {
+            homeNav.classList.remove('text-slate-400');
+            homeNav.classList.add('bg-blue-600', 'text-white');
+        }
     }
 
     // --- FEATURE 6: Privacy Mode ---
@@ -1475,88 +1494,6 @@
     }
 
     // FEATURE 8: Heatmap
-    function renderHeatmap() {
-        let heatmapContainer = document.getElementById('heatmapSection');
-
-        if (!heatmapContainer) {
-            const dashboardView = document.getElementById('view-dashboard');
-            if (!dashboardView) return;
-
-            heatmapContainer = document.createElement('div');
-            heatmapContainer.id = 'heatmapSection';
-            heatmapContainer.className = "bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6 hidden md:block";
-
-            heatmapContainer.innerHTML = `
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Spending Habits (Last 365 Days)</h3>
-                <div class="heatmap-container">
-                    <div id="heatmapGrid" class="heatmap-grid"></div>
-                </div>
-                <div class="flex justify-end items-center gap-2 mt-2 text-xs text-gray-400">
-                    <span>Less</span>
-                    <div class="w-3 h-3 rounded bg-gray-200 dark:bg-slate-800"></div>
-                    <div class="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-900"></div>
-                    <div class="w-3 h-3 rounded bg-emerald-400 dark:bg-emerald-700"></div>
-                    <div class="w-3 h-3 rounded bg-emerald-600 dark:bg-emerald-500"></div>
-                    <span>More</span>
-                </div>
-            `;
-
-            dashboardView.appendChild(heatmapContainer);
-        }
-
-        const grid = document.getElementById('heatmapGrid');
-        grid.innerHTML = '';
-
-        const dateMap = {};
-        const today = new Date();
-
-        for (let i = 0; i < 365; i++) {
-            const d = new Date();
-            d.setDate(today.getDate() - i);
-            const dateStr = d.toISOString().split('T')[0];
-            dateMap[dateStr] = 0;
-        }
-
-        let maxSpend = 0;
-        transactions.filter(t => t.type === 'expense').forEach(t => {
-            if (dateMap.hasOwnProperty(t.date)) {
-                dateMap[t.date] += t.amount;
-                if (dateMap[t.date] > maxSpend) maxSpend = dateMap[t.date];
-            }
-        });
-
-        const startDate = new Date();
-        startDate.setDate(today.getDate() - 365);
-
-        while (startDate.getDay() !== 0) {
-            startDate.setDate(startDate.getDate() - 1);
-        }
-
-        let currentDate = new Date(startDate);
-
-        while (currentDate <= today) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            const amount = dateMap[dateStr] || 0;
-
-            let intensity = 0;
-            if (amount > 0) {
-                const ratio = amount / (maxSpend || 1);
-                if (ratio > 0.75) intensity = 4;
-                else if (ratio > 0.5) intensity = 3;
-                else if (ratio > 0.25) intensity = 2;
-                else intensity = 1;
-            }
-
-            const cell = document.createElement('div');
-            cell.className = `heatmap-cell heat-${intensity}`;
-            cell.title = `${dateStr}: ${formatCurrency(amount)}`;
-
-            grid.appendChild(cell);
-
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-    }
-
     function calculateSplit() {
         const total = parseFloat(document.getElementById('splitTotal').value) || 0;
         const people = parseInt(document.getElementById('splitPeople').value) || 1;
