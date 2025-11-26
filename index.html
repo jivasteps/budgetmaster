@@ -1184,15 +1184,18 @@
     </div>
 
    <script>
-    document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function() {
     // 1. Get the element
-    const form = document.getElementById('inviteForm');
+   const inviteForm = document.getElementById('inviteForm');
     const statusDiv = document.getElementById('formStatus');
 
+    // 2. Debug Log (Check your console to see this!)
+    console.log("Is inviteForm found?", inviteForm);
+
     // 2. SAFETY CHECK: Only run if the form actually exists on this page
-    if (form) { 
+    if (inviteForm) { 
         
-        form.addEventListener('submit', function(e) {
+        inviteForm.addEventListener('submit', function(e){
             e.preventDefault(); 
 
             const formData = new FormData(form);
