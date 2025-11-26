@@ -29,7 +29,7 @@
     let debts = [];
     let recurringItems = [];
     let shoppingItems = [];
-    let familyMembers = []; 
+    let familyMembers = [];
     let wallets = [];
     let categories = { expense: [], income: [], investment: [] };
     let categoryMap = {};
@@ -41,7 +41,7 @@
     let currentCalendarDate = new Date();
     let userPin = null;
     let pinInput = "";
-    let currentCurrency = 'INR'; 
+    let currentCurrency = 'INR';
 
     const defaultCategoriesList = [
         { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -181,18 +181,18 @@
                     showToast("Synced with Household", "success");
                 } else {
                     currentHouseholdId = user.uid; // Default to own UID
-                    await userRef.set({ 
+                    await userRef.set({
                         email: user.email,
                         householdId: currentHouseholdId,
                         joinedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
-                    
+
                     // Initialize household
                     await db.collection('artifacts').doc(appId).collection('households').doc(currentHouseholdId).set({
                         owner: user.uid,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
-                    
+
                     showToast("New Household Created", "success");
                 }
 
@@ -213,7 +213,7 @@
                 setupRecurringListener();
                 setupDebtsListener();
                 setupShoppingListener();
-                setupFamilyListener(); 
+                setupFamilyListener();
                 loadBudget();
             } else {
                 document.getElementById('view-landing').classList.remove('hidden');
@@ -273,7 +273,7 @@
                 area.classList.add('hidden');
                 dot.classList.remove('translate-x-5');
                 dot.parentElement.classList.remove('bg-blue-600');
-                dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700'); // Clean up classes
+                dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700');
                 dot.parentElement.classList.add('bg-gray-200', 'dark:bg-slate-700');
                 userPin = null;
             }
@@ -337,7 +337,7 @@
             debts: debts,
             recurring: recurringItems,
             shopping: shoppingItems,
-            family: familyMembers 
+            family: familyMembers
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -393,14 +393,14 @@
     // --- WALLETS ---
     function setupWalletsListener() {
         const ref = getDbRef('wallets');
-        if(!ref) return;
+        if (!ref) return;
 
         ref.onSnapshot(async (snap) => {
             if (snap.empty) { await seedDefaultWallets(ref); return; }
             wallets = []; walletMap = {};
             snap.forEach(doc => { const d = { id: doc.id, ...doc.data() }; wallets.push(d); walletMap[d.id] = d; });
             updateWalletOptions();
-            renderJointAccounts(); 
+            renderJointAccounts();
         });
     }
     async function seedDefaultWallets(ref) {
@@ -420,13 +420,13 @@
     // --- FAMILY & JOINT ---
     function setupFamilyListener() {
         const ref = getDbRef('family');
-        if(!ref) return;
-        
+        if (!ref) return;
+
         ref.onSnapshot(snap => {
-                familyMembers = [];
-                snap.forEach(doc => familyMembers.push({ id: doc.id, ...doc.data() }));
-                renderFamilyMembers();
-            });
+            familyMembers = [];
+            snap.forEach(doc => familyMembers.push({ id: doc.id, ...doc.data() }));
+            renderFamilyMembers();
+        });
     }
 
     function renderFamilyMembers() {
@@ -547,7 +547,7 @@
     // --- CATEGORIES ---
     function setupCategoriesListener() {
         const catsRef = getDbRef('categories');
-        if(!catsRef) return;
+        if (!catsRef) return;
 
         catsRef.onSnapshot(async (snapshot) => {
             if (snapshot.empty) { await seedDefaultCategories(catsRef); return; }
@@ -609,14 +609,14 @@
     // --- DEBTS ---
     function setupDebtsListener() {
         const ref = getDbRef('debts');
-        if(!ref) return;
+        if (!ref) return;
 
         ref.onSnapshot(snap => {
-                debts = [];
-                snap.forEach(doc => debts.push({ id: doc.id, ...doc.data() }));
-                renderDebts();
-                calculateNetWorth(); 
-            });
+            debts = [];
+            snap.forEach(doc => debts.push({ id: doc.id, ...doc.data() }));
+            renderDebts();
+            calculateNetWorth();
+        });
     }
     function renderDebts() {
         const grid = document.getElementById('debtsGrid'); if (!grid) return;
@@ -688,13 +688,13 @@
     // --- SHOPPING ---
     function setupShoppingListener() {
         const ref = getDbRef('shopping');
-        if(!ref) return;
+        if (!ref) return;
 
         ref.onSnapshot(snap => {
-                shoppingItems = [];
-                snap.forEach(doc => shoppingItems.push({ id: doc.id, ...doc.data() }));
-                renderShoppingList();
-            });
+            shoppingItems = [];
+            snap.forEach(doc => shoppingItems.push({ id: doc.id, ...doc.data() }));
+            renderShoppingList();
+        });
     }
 
     function renderShoppingList() {
@@ -779,13 +779,13 @@
     // --- RECURRING ---
     function setupRecurringListener() {
         const ref = getDbRef('recurring');
-        if(!ref) return;
+        if (!ref) return;
 
         ref.onSnapshot(snap => {
-                recurringItems = [];
-                snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
-                renderRecurring();
-            });
+            recurringItems = [];
+            snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
+            renderRecurring();
+        });
     }
     function renderRecurring() {
         const grid = document.getElementById('recurringGrid'); if (!grid) return;
@@ -797,8 +797,8 @@
 
         recurringItems.forEach(item => {
             const cat = categoryMap[item.category] || { name: 'Unknown', icon: 'fa-rotate', color: '#ccc' };
-            const isDue = item.day <= today; 
-            
+            const isDue = item.day <= today;
+
             grid.innerHTML += `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
                         <button onclick="deleteRecurring('${item.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
@@ -915,7 +915,7 @@
             transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
             updateTagFilter();
             updateUI();
-            renderJointAccounts(); 
+            renderJointAccounts();
         });
     }
 
@@ -928,7 +928,7 @@
         });
 
         const select = document.getElementById('filterTag');
-        if (!select) return; 
+        if (!select) return;
         const current = select.value;
         select.innerHTML = '<option value="all">All Tags</option>';
 
@@ -944,13 +944,13 @@
 
     function setupGoalsListener() {
         const goalsRef = getDbRef('goals');
-        if(!goalsRef) return;
+        if (!goalsRef) return;
 
         goalsRef.onSnapshot((snapshot) => {
             goals = [];
             snapshot.forEach(doc => goals.push({ id: doc.id, ...doc.data() }));
             renderGoals();
-            calculateNetWorth(); 
+            calculateNetWorth();
         });
     }
 
@@ -1005,20 +1005,19 @@
             if (d.type === 'borrowed') totalDebt += Number(d.amount);
         });
 
-        goals.forEach(g => savings += Number(g.saved)); 
+        goals.forEach(g => savings += Number(g.saved));
 
-        // --- FEATURE 4 LOGIC START ---
         const today = now.getDate();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const daysRemaining = daysInMonth - today;
-        
+
         // Calculate Average Daily Spend (ADS)
         const dailyAverage = today > 0 ? expenses / today : expenses;
-        
+
         // Forecast: Current Spent + (Average * Days Left)
         const projectedSpend = expenses + (dailyAverage * daysRemaining);
         const budget = monthlyBudget || 0;
-        
+
         let predictionMsg = "On track.";
         let isDanger = false;
 
@@ -1034,7 +1033,6 @@
         } else {
             predictionMsg = "Set a budget to see forecasts.";
         }
-        // --- FEATURE 4 LOGIC END ---
 
         // SCORING
         let savingsScore = 0;
@@ -1048,12 +1046,12 @@
         if (monthlyBudget > 0) {
             if (expenses > monthlyBudget) budgetScore = Math.max(0, 100 - ((expenses - monthlyBudget) / monthlyBudget * 100));
         } else {
-            budgetScore = 50; 
+            budgetScore = 50;
         }
 
         let debtScore = 100;
         if (income > 0) {
-            const debtRatio = totalDebt / (income * 12); 
+            const debtRatio = totalDebt / (income * 12);
             if (debtRatio > 0.3) debtScore = Math.max(0, 100 - ((debtRatio - 0.3) * 100));
         }
 
@@ -1077,13 +1075,13 @@
 
             if (isDanger) {
                 statusText.textContent = "Risk Alert";
-                statusText.className = "font-bold text-rose-400 blink-animation"; 
-                actionText.innerHTML = predictionMsg; 
+                statusText.className = "font-bold text-rose-400 blink-animation";
+                actionText.innerHTML = predictionMsg;
             } else {
                 if (totalScore >= 80) { statusText.textContent = "Excellent"; actionText.textContent = predictionMsg; }
                 else if (totalScore >= 50) { statusText.textContent = "Good"; actionText.textContent = predictionMsg; }
                 else { statusText.textContent = "Needs Work"; actionText.textContent = predictionMsg; }
-                
+
                 statusText.className = `font-bold ${totalScore >= 50 ? 'text-emerald-400' : 'text-yellow-400'}`;
             }
         }
@@ -1121,8 +1119,8 @@
             if (t.type === 'income') cash += amt;
             else if (t.type === 'expense') cash -= amt;
             else if (t.type === 'investment') {
-                cash -= amt;    
-                invested += amt; 
+                cash -= amt;
+                invested += amt;
             }
         });
 
@@ -1186,6 +1184,83 @@
         });
     }
 
+    // FEATURE 5: Gamification (Badges)
+    function renderGamification() {
+        let badgeContainer = document.getElementById('gamificationSection');
+
+        // Create container if it doesn't exist
+        if (!badgeContainer) {
+            const dashboardView = document.getElementById('view-dashboard');
+            if (!dashboardView) return;
+
+            badgeContainer = document.createElement('div');
+            badgeContainer.id = 'gamificationSection';
+            badgeContainer.className = "mb-6 grid grid-cols-2 md:grid-cols-4 gap-4";
+
+            // Insert after the Health Score card
+            dashboardView.insertBefore(badgeContainer, dashboardView.children[1]);
+        }
+
+        badgeContainer.innerHTML = '';
+
+        const badges = [
+            {
+                id: 'debt_free',
+                name: 'Debt Destroyer',
+                icon: 'fa-shield-halved',
+                color: 'text-emerald-500',
+                bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+                unlocked: debts.length === 0 && transactions.length > 0,
+                desc: 'Zero active debts'
+            },
+            {
+                id: 'saver',
+                name: 'Super Saver',
+                icon: 'fa-piggy-bank',
+                color: 'text-blue-500',
+                bg: 'bg-blue-100 dark:bg-blue-900/30',
+                unlocked: goals.some(g => g.saved >= g.target && g.target > 0),
+                desc: 'Hit a savings goal'
+            },
+            {
+                id: 'planner',
+                name: 'Future Planner',
+                icon: 'fa-calendar-check',
+                color: 'text-purple-500',
+                bg: 'bg-purple-100 dark:bg-purple-900/30',
+                unlocked: recurringItems.length >= 3,
+                desc: '3+ recurring items'
+            },
+            {
+                id: 'investor',
+                name: 'Wealth Builder',
+                icon: 'fa-arrow-trend-up',
+                color: 'text-amber-500',
+                bg: 'bg-amber-100 dark:bg-amber-900/30',
+                unlocked: transactions.some(t => t.type === 'investment'),
+                desc: 'Made an investment'
+            }
+        ];
+
+        badges.forEach(b => {
+            const opacity = b.unlocked ? 'opacity-100 badge-enter' : 'opacity-40 grayscale';
+            const statusIcon = b.unlocked ? '<i class="fa-solid fa-check-circle text-emerald-500 absolute top-2 right-2 text-xs"></i>' : '<i class="fa-solid fa-lock text-gray-400 absolute top-2 right-2 text-xs"></i>';
+
+            badgeContainer.innerHTML += `
+                <div class="relative p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-3 ${opacity} transition-all">
+                    ${statusIcon}
+                    <div class="w-10 h-10 rounded-full ${b.bg} flex items-center justify-center ${b.color}">
+                        <i class="fa-solid ${b.icon}"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200">${b.name}</h4>
+                        <p class="text-[10px] text-gray-400">${b.desc}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
     // SPLIT BILL
     function calculateSplit() {
         const total = parseFloat(document.getElementById('splitTotal').value) || 0;
@@ -1213,7 +1288,10 @@
 
     function updateUI() {
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
-        calculateFinancialHealth(); 
+        calculateFinancialHealth();
+
+        // FEATURE 5 Call
+        renderGamification();
     }
     function renderSummary() {
         let inc = 0, exp = 0, inv = 0;
@@ -1521,7 +1599,7 @@
         if (id === 'goals') goalsBtn.classList.remove('hidden');
         else if (id === 'recurring') recBtn.classList.remove('hidden');
         else if (id === 'debts') debtBtn.classList.remove('hidden');
-        else if (id === 'family') familyBtn.classList.remove('hidden'); 
+        else if (id === 'family') familyBtn.classList.remove('hidden');
         else if (id === 'dashboard' || id === 'transactions' || id === 'calendar') txnBtn.classList.remove('hidden');
 
         if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();

@@ -215,12 +215,20 @@ body {
     }
 }
 
-/* [style.css] */
+/* Feature 4: Risk Alert Blink */
 @keyframes pulse-red {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
 }
-
 .blink-animation {
     animation: pulse-red 2s infinite;
+}
+
+/* Feature 5: Gamification Badge Unlock Pop */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.badge-enter {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
