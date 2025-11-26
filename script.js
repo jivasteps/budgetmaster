@@ -1954,4 +1954,5 @@
     addListener('endDate', 'change', renderFullList);
 
     initApp();
+    
 }

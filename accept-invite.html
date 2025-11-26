@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Family Account | Your Bank</title>
+    <link rel="stylesheet" href="style.css"> <style>
+        /* specific styles for this page */
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .invite-card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .card-header {
+            background: #007bff;
+            padding: 30px 20px;
+            color: white;
+        }
+
+        .card-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .card-body {
+            padding: 40px 30px;
+        }
+
+        .avatar-group {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-left: -15px;
+        }
+        .avatar:first-child { margin-left: 0; background-color: #0056b3; color: white; }
+
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background-color: #28a745; color: white; }
+        .btn-primary:hover { background-color: #218838; }
+        
+        .btn-secondary { background-color: #f8f9fa; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background-color: #e2e6ea; }
+
+        /* Loader Animation */
+        .spinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Footer Style Override */
+        footer {
+            background-color: white;
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="successCard" class="invite-card" style="display: none;">
+            <div class="card-header" style="background-color: #28a745;">
+                <h1>🎉 Welcome Aboard!</h1>
+            </div>
+            <div class="card-body">
+                
+
+[Image of handshake icon]
+
+                <p>You have successfully joined the Family Account.</p>
+                <p>You can now access shared funds and view transactions.</p>
+                <a href="index.html" class="btn btn-primary" style="display:block; text-decoration:none; margin-top:20px;">Go to Dashboard</a>
+            </div>
+        </div>
+
+        <div id="inviteCard" class="invite-card">
+            <div class="card-header">
+                <h1>Joint Account Invite</h1>
+            </div>
+            <div class="card-body">
+                <div class="avatar-group">
+                    <div class="avatar">👤</div> <div class="avatar">❓</div> </div>
+
+                <h3 id="inviteTitle">Incoming Invitation</h3>
+                <p style="color: #666; line-height: 1.5;">
+                    <strong id="inviterName">A family member</strong> has invited you to manage a Joint Banking Account together.
+                </p>
+
+                <div class="spinner" id="loader"></div>
+
+                <div class="btn-group" id="actionButtons">
+                    <button class="btn btn-secondary" onclick="declineInvite()">Decline</button>
+                    <button class="btn btn-primary" onclick="acceptInvite()">Accept & Join</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Designed by Parul Gangwal</p>
+    </footer>
+
+    <script>
+        // 1. Parse URL Parameters to make it dynamic
+        // Example URL: accept-invite.html?inviter=admin@gmail.com
+        const params = new URLSearchParams(window.location.search);
+        const inviterEmail = params.get('inviter');
+        
+        if (inviterEmail) {
+            document.getElementById('inviterName').innerText = inviterEmail;
+        }
+
+        // 2. Handle Accept Logic
+        function acceptInvite() {
+            // UI Updates
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            // Simulate Network Request (Since we have no backend)
+            setTimeout(() => {
+                // Save "Session" in LocalStorage to simulate logged-in state
+                localStorage.setItem('userRole', 'JOINT_OWNER');
+                localStorage.setItem('hasFamilyAccount', 'true');
+
+                // Switch cards
+                document.getElementById('inviteCard').style.display = 'none';
+                document.getElementById('successCard').style.display = 'block';
+            }, 1500);
+        }
+
+        // 3. Handle Decline Logic
+        function declineInvite() {
+            if(confirm("Are you sure you want to decline this invitation?")) {
+                window.location.href = "index.html"; // Redirect home
+            }
+        }
+    </script>
+</body>
+</html>
