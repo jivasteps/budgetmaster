@@ -513,37 +513,52 @@
                 </div>
 
                 <div id="view-shopping" class="hidden max-w-4xl mx-auto pb-10">
-                    <div
-                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
-                        <div
-                            class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white"><i
-                                    class="fa-solid fa-cart-shopping mr-2"></i> Shopping List</h3>
-                            <button onclick="checkoutShoppingList()"
-                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                Checkout Selected (<span id="shoppingTotal">₹0</span>)
-                            </button>
-                        </div>
-                        <div class="p-6 bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-700">
-                            <form id="shoppingForm" class="flex gap-2">
-                                <input type="text" id="shopItem" placeholder="Item name (e.g., Milk)"
-                                    class="flex-1 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required>
-                                <div class="relative w-32">
-                                    <span
-                                        class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
-                                    <input type="number" step="0.01" id="shopCost" placeholder="Est. Cost"
-                                        class="w-full pl-7 pr-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div class="shopping-container">
+                        <div class="shopping-header">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-cart-shopping"></i>
                                 </div>
-                                <button type="submit"
-                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"><i
-                                        class="fa-solid fa-plus"></i></button>
-                            </form>
+                                <div>
+                                    <h3 class="text-xl font-bold">Family Shopping List</h3>
+                                    <p class="text-blue-100 text-xs">Syncs across all family devices</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="badge-joint"><i class="fa-solid fa-users"></i> Shared</span>
+                                <button onclick="checkoutShoppingList()"
+                                    class="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                                    Checkout (<span id="shoppingTotal">₹0</span>)
+                                </button>
+                            </div>
                         </div>
-                        <div id="shoppingList" class="divide-y divide-gray-100 dark:divide-slate-700">
+
+                        <form id="shoppingForm" class="shopping-input-group">
+                            <input type="text" id="shopItem" placeholder="Add item (e.g., Milk, Eggs)..."
+                                class="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                required>
+                            <div class="relative w-32">
+                                <span
+                                    class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+                                <input type="number" step="0.01" id="shopCost" placeholder="Cost"
+                                    class="w-full pl-7 pr-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <button type="submit"
+                                class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </form>
+
+                        <div id="shoppingList" class="bg-white dark:bg-slate-800 min-h-[300px]">
                         </div>
-                        <div id="emptyShopping" class="hidden py-12 text-center text-gray-400">
-                            <p>List is empty.</p>
+
+                        <div id="emptyShopping" class="hidden py-16 text-center text-gray-400">
+                            <div
+                                class="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-basket-shopping text-2xl text-gray-300"></i>
+                            </div>
+                            <p>Your list is empty.</p>
+                            <p class="text-sm text-gray-400 mt-1">Add items to share with family.</p>
                         </div>
                     </div>
                 </div>
@@ -1177,6 +1192,13 @@
 
                     <button type="submit" id="submitBtn">Send Invite</button>
                 </form>
+                <div class="invite-card" style="margin-top: 20px;">
+                    <h3>My Family Account</h3>
+
+                    <div id="familyListContainer">
+                        <p style="color:#777; text-align:center;">No family members joined yet.</p>
+                    </div>
+                </div>
 
                 <div id="formStatus"></div>
             </div>

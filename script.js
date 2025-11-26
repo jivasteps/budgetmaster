@@ -641,69 +641,107 @@
 
     const familyModal = document.getElementById('familyModal');
     function openFamilyModal() {
-        document.getElementById('familyForm').reset(); 
+        document.getElementById('familyForm').reset();
         familyModal.classList.remove('hidden');
     }
     function closeFamilyModal() { familyModal.classList.add('hidden'); }
 
     // --- INVITE MEMBER (WRITES TO FIRESTORE FOR CLOUD FUNCTION) ---
-  document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
 
-    // 1. Get the form element
-    const familyForm = document.getElementById('familyForm');
-       // 2. CRITICAL FIX: The "if (familyForm)" check stops the crash
-    if (familyForm) {
-        
-        console.log("Family Form found, attaching listener..."); // Debug
+        // ==========================================
+        // 1. HANDLE FAMILY INVITE FORM (SENDING)
+        // ==========================================
+        const familyForm = document.getElementById('familyForm');
 
-        familyForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        if (familyForm) {
+            console.log("✅ Family Form detected. Ready to send invites.");
 
-            const statusDiv = document.getElementById('formStatus');
-            const btn = document.getElementById('submitBtn');
-            const inviteeEmail = document.getElementById('inviteEmail').value;
-            
-            // Prepare Data for FormSubmit
-            const formData = new FormData(familyForm);
-            
-            // Add the CC field so the family member gets the email
-            formData.append("_cc", inviteeEmail); 
-            
-            // Create the Invite Link
-            // CHANGE "localhost:3000" to your Vercel URL (e.g., https://budgetmaster-gamma.vercel.app)
-            const link = `https://budgetmaster-gamma.vercel.app/accept-invite.html?inviter=${encodeURIComponent("JivaSteps@gmail.com")}`;
-            
-            formData.append("message", `You have been invited to join the Family Account. Click here to accept: ${link}`);
+            familyForm.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-            // UI Loading State
-            btn.innerHTML = "Sending...";
-            btn.disabled = true;
+                const statusDiv = document.getElementById('formStatus');
+                const btn = document.getElementById('submitBtn');
+                const inviteeEmailInput = document.getElementById('inviteEmail');
+                const inviteeEmail = inviteeEmailInput.value;
 
-            // Send via FormSubmit (No Backend Required)
-            fetch("https://formsubmit.co/ajax/JivaSteps@gmail.com", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (statusDiv) statusDiv.innerHTML = "<p style='color:green; font-weight:bold;'>✅ Invite sent successfully!</p>";
-                familyForm.reset();
-            })
-            .catch(error => {
-                console.error(error);
-                if (statusDiv) statusDiv.innerHTML = "<p style='color:red;'>❌ Error sending invite.</p>";
-            })
-            .finally(() => {
-                btn.innerHTML = "Send Invite";
-                btn.disabled = false;
+                // --- CONFIGURATION ---
+                // REPLACE THIS with your actual email (The Admin)
+                const ADMIN_EMAIL = "JivaSteps@gmail.com ";
+
+                // REPLACE THIS with your Vercel/Live URL (No trailing slash)
+                // Example: "https://budgetmaster.vercel.app"
+                const BASE_URL = 'https://budgetmaster-gamma.vercel.app'; // Automatically gets current domain
+
+                // --- 1. PREPARE DATA ---
+                const formData = new FormData(familyForm);
+
+                // Send copy to the invitee
+                formData.append("_cc", inviteeEmail);
+
+                // Create Dynamic Link with Query Params
+                // We pass 'inviter' and 'invitee' so the next page knows who is who
+                const link = `${BASE_URL}/accept-invite.html?inviter=${encodeURIComponent(ADMIN_EMAIL)}&invitee=${encodeURIComponent(inviteeEmail)}`;
+
+                formData.append("message", `You have been invited to join the Family Joint Account. Click here to accept: ${link}`);
+
+                // --- 2. UI UPDATES ---
+                btn.innerHTML = "Sending...";
+                btn.disabled = true;
+
+                // --- 3. SEND REQUEST ---
+                fetch(`https://formsubmit.co/ajax/${ADMIN_EMAIL}`, {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("FormSubmit Response:", data);
+                        if (statusDiv) statusDiv.innerHTML = "<p style='color:green; font-weight:bold; margin-top:10px;'>✅ Invite sent successfully!</p>";
+                        familyForm.reset();
+                    })
+                    .catch(error => {
+                        console.error("FormSubmit Error:", error);
+                        if (statusDiv) statusDiv.innerHTML = "<p style='color:red; margin-top:10px;'>❌ Error sending invite.</p>";
+                    })
+                    .finally(() => {
+                        btn.innerHTML = "Send Invite";
+                        btn.disabled = false;
+                    });
             });
-        });
+        } else {
+            console.log("ℹ️ Family Form not found on this page. Script skipped.");
+        }
 
-    } else {
-        // This log confirms the script didn't crash, it just skipped the form safely
-        console.log("Family Form not found on this page. Script skipped safely.");
-    }
+        // ==========================================
+        // 2. CHECK FOR JOINED MEMBERS (DISPLAYING)
+        // ==========================================
+        const familyList = document.getElementById('familyListContainer');
+
+        // Check if we have a saved member in 'database' (LocalStorage)
+        const storedMember = localStorage.getItem('family_member_joined');
+
+        if (familyList && storedMember) {
+            const member = JSON.parse(storedMember);
+
+            // Clear the default "No members" text
+            familyList.innerHTML = '';
+
+            // Create the HTML for the new member
+            const memberHTML = `
+            <div class="family-member-item" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; border-left: 4px solid #28a745;">
+                <div class="member-info">
+                    <strong style="display:block; color:#333;">Family Member</strong>
+                    <span style="font-size: 12px; color: #777;">${member.email}</span>
+                </div>
+                <span class="status-badge" style="background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                    ✅ ${member.status}
+                </span>
+            </div>
+        `;
+
+            familyList.innerHTML = memberHTML;
+        }
     });
 
     window.deleteFamilyMember = async (id) => {
@@ -897,25 +935,38 @@
         } else {
             document.getElementById('emptyShopping').classList.add('hidden');
 
+            // Sort: Unchecked items first, then checked
+            shoppingItems.sort((a, b) => (a.checked === b.checked) ? 0 : a.checked ? 1 : -1);
+
             shoppingItems.forEach(item => {
                 total += item.cost;
                 if (item.checked) checkedTotal += item.cost;
 
-                const checkState = item.checked ? 'checked' : '';
-                const strikeClass = item.checked ? 'line-through text-gray-400' : 'text-gray-800 dark:text-white';
+                const isChecked = item.checked ? 'checked' : '';
+                const textClass = item.checked ? 'completed' : '';
 
+                // Using the new CSS classes we added
                 list.innerHTML += `
-                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" ${checkState} onchange="toggleShoppingItem('${item.id}', this.checked)" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                                <span class="${strikeClass}">${item.name}</span>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="font-mono text-sm text-gray-600 dark:text-gray-300 privacy-sensitive">${formatCurrency(item.cost)}</span>
-                                <button onclick="deleteShoppingItem('${item.id}')" class="text-gray-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                            </div>
+                <div class="shopping-list-item group">
+                    <div class="flex items-center flex-1">
+                        <input type="checkbox" ${isChecked} 
+                            onchange="toggleShoppingItem('${item.id}', this.checked)" 
+                            class="shopping-checkbox">
+                        
+                        <div class="flex flex-col">
+                            <span class="item-text ${textClass}">${item.name}</span>
+                            <span class="text-[10px] text-gray-400 md:hidden">${formatCurrency(item.cost)}</span>
                         </div>
-                    `;
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <span class="item-cost-tag hidden md:block">${formatCurrency(item.cost)}</span>
+                        <button onclick="deleteShoppingItem('${item.id}')" class="delete-shop-btn">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
             });
         }
         document.getElementById('shoppingTotal').textContent = formatCurrency(checkedTotal);
