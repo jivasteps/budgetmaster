@@ -1970,24 +1970,25 @@
     }
 
     function showPage(id) {
-        // 1. Hide all views
+        // 1. Hide all views safely
         document.querySelectorAll('main > div[id^="view-"]').forEach(el => el.classList.add('hidden'));
 
-        // 2. Show the selected view
+        // 2. Show the selected view safely
         const targetView = document.getElementById(`view-${id}`);
         if (targetView) targetView.classList.remove('hidden');
 
         // 3. Update Title
         const titleMap = {
             'dashboard': 'Home',
-            'reports': 'Analytics & Reports', // <--- New Title
+            'reports': 'Analytics & Reports',
             'transactions': 'Transactions',
             'family': 'Family & Joint',
             'shopping': 'Shopping List',
             'goals': 'Savings Goals',
             'settings': 'Settings'
         };
-        document.getElementById('pageTitle').textContent = titleMap[id] || 'ExpenseFlow';
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = titleMap[id] || 'PocketGuard';
 
         // 4. Update Navigation Active State
         document.querySelectorAll('.nav-item').forEach(el => {
@@ -2001,36 +2002,44 @@
             activeNav.classList.add('bg-blue-600', 'text-white');
         }
 
-        // 5. Handle Action Buttons (Show/Hide top-right buttons)
+        // 5. Handle Action Buttons (THE FIX: Safe Show/Hide)
         const goalsBtn = document.getElementById('addGoalBtn');
         const recBtn = document.getElementById('addRecBtn');
         const txnBtn = document.getElementById('addTxnBtn');
         const debtBtn = document.getElementById('addDebtBtn');
         const familyBtn = document.getElementById('addFamilyBtn');
 
+        // Helper: Safely hide a button if it exists
+        const safeHide = (btn) => { if (btn) btn.classList.add('hidden'); };
+        // Helper: Safely show a button if it exists
+        const safeShow = (btn) => { if (btn) btn.classList.remove('hidden'); };
+
         // Hide all first
-        [goalsBtn, recBtn, txnBtn, debtBtn, familyBtn].forEach(btn => {
-            if (btn) btn.classList.add('hidden');
-        });
+        [goalsBtn, recBtn, txnBtn, debtBtn, familyBtn].forEach(safeHide);
 
         // Show specific buttons based on page
-        if (id === 'goals') goalsBtn.classList.remove('hidden');
-        else if (id === 'recurring') recBtn.classList.remove('hidden');
-        else if (id === 'debts') debtBtn.classList.remove('hidden');
-        else if (id === 'family') familyBtn.classList.remove('hidden');
-        else if (id === 'dashboard' || id === 'transactions') txnBtn.classList.remove('hidden');
+        if (id === 'goals') safeShow(goalsBtn);
+        else if (id === 'recurring') safeShow(recBtn);
+        else if (id === 'debts') safeShow(debtBtn);
+        else if (id === 'family') safeShow(familyBtn);
+        else if (id === 'dashboard' || id === 'transactions') safeShow(txnBtn);
 
         // 6. Special Case: Render charts if opening Reports
         if (id === 'reports') {
             setTimeout(() => {
-                renderChart();
-                renderTrendChart();
-                renderHeatmap(); // If you kept this for desktop
+                if (window.renderChart) renderChart();
+                if (window.renderTrendChart) renderTrendChart();
+                if (window.renderComparisonChart) renderComparisonChart();
+                if (window.renderHeatmap) renderHeatmap();
             }, 100);
         }
 
-        // 7. Mobile Sidebar Logic
-        if (window.innerWidth < 768 && document.getElementById('sidebar').classList.contains('open')) {
+        // 7. Mobile Sidebar Logic (Close sidebar after click)
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        // Check if we are on mobile AND sidebar is open
+        if (window.innerWidth < 768 && sidebar && sidebar.classList.contains('open')) {
             toggleSidebar();
         }
     }

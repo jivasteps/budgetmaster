@@ -191,6 +191,20 @@
                 <h2 id="pageTitle" class="text-lg font-semibold text-gray-800 dark:text-white">PocketGuard</h2>
 
                 <div class="flex items-center gap-2">
+                    <button onclick="openGoalModal()" id="addGoalBtn"
+                        class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> New Goal
+                    </button>
+
+                    <button onclick="openFamilyModal()" id="addFamilyBtn"
+                        class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Invite
+                    </button>
+
+                    <button onclick="openModal()" id="addTxnBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Transaction</span>
+                    </button>
                 </div>
             </header>
 
