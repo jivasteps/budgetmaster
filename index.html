@@ -115,52 +115,32 @@
             <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
                 <a href="#" onclick="showPage('dashboard')" id="nav-dashboard"
                     class="nav-item flex items-center gap-3 px-4 py-3 bg-blue-600 rounded-xl text-white transition-colors">
-                    <i class="fa-solid fa-chart-pie w-5"></i> <span class="font-medium">Dashboard</span>
-                </a>
-                <a href="#" onclick="showPage('networth')" id="nav-networth"
-                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-scale-balanced w-5"></i> <span class="font-medium">Net Worth</span>
+                    <i class="fa-solid fa-house w-5"></i> <span class="font-medium">Home</span>
                 </a>
                 <a href="#" onclick="showPage('transactions')" id="nav-transactions"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-list-ul w-5"></i> <span class="font-medium">Transactions</span>
                 </a>
+                <a href="#" onclick="showPage('reports')" id="nav-reports"
+                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                    <i class="fa-solid fa-chart-pie w-5"></i> <span class="font-medium">Analytics & Reports</span>
+                </a>
                 <a href="#" onclick="showPage('family')" id="nav-family"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-users w-5"></i> <span class="font-medium">Family & Joint</span>
-                </a>
-                <a href="#" onclick="showPage('calendar')" id="nav-calendar"
-                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-calendar-days w-5"></i> <span class="font-medium">Calendar</span>
+                    <i class="fa-solid fa-users w-5"></i> <span class="font-medium">Family</span>
                 </a>
                 <a href="#" onclick="showPage('shopping')" id="nav-shopping"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-cart-shopping w-5"></i> <span class="font-medium">Shopping List</span>
-                </a>
-                <a href="#" onclick="showPage('recurring')" id="nav-recurring"
-                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-rotate w-5"></i> <span class="font-medium">Recurring</span>
-                </a>
-                <a href="#" onclick="showPage('debts')" id="nav-debts"
-                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-hand-holding-dollar w-5"></i> <span class="font-medium">Debts</span>
-                </a>
-                <a href="#" onclick="showPage('tools')" id="nav-tools"
-                    class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-screwdriver-wrench w-5"></i> <span class="font-medium">Tools</span>
+                    <i class="fa-solid fa-cart-shopping w-5"></i> <span class="font-medium">Shopping</span>
                 </a>
                 <a href="#" onclick="showPage('goals')" id="nav-goals"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                    <i class="fa-solid fa-bullseye w-5"></i> <span class="font-medium">Savings Goals</span>
+                    <i class="fa-solid fa-bullseye w-5"></i> <span class="font-medium">Goals</span>
                 </a>
                 <a href="#" onclick="showPage('settings')" id="nav-settings"
                     class="nav-item flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
                     <i class="fa-solid fa-gear w-5"></i> <span class="font-medium">Settings</span>
                 </a>
-                <button id="installBtn"
-                    class="hidden w-full flex items-center gap-3 px-4 py-3 text-emerald-400 hover:text-emerald-300 hover:bg-slate-800 rounded-xl transition-colors text-left mt-8">
-                    <i class="fa-solid fa-download w-5"></i> <span class="font-medium">Install App</span>
-                </button>
             </nav>
 
             <div class="p-4 border-t border-slate-800 space-y-3">
@@ -224,173 +204,106 @@
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="mainScroll">
 
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto pb-10">
+                    <div
+                        class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <p class="text-blue-100 text-sm font-medium mb-1">Total Balance</p>
+                            <h1 class="text-4xl font-bold privacy-sensitive" id="totalBalance">₹0.00</h1>
+                        </div>
+                        <button onclick="openModal()"
+                            class="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-sm flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add Expense
+                        </button>
+                    </div>
 
                     <div
-                        class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
-                        <div class="absolute right-0 bottom-0 p-4 opacity-10"><i
-                                class="fa-solid fa-heart-pulse text-9xl"></i></div>
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                        class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div class="flex justify-between items-end mb-2">
                             <div>
-                                <h3 class="text-xl font-bold flex items-center gap-2"><i
-                                        class="fa-solid fa-heart-pulse text-rose-500"></i> Financial Health Score</h3>
-                                <p class="text-slate-400 text-sm mt-1 max-w-md">Your score is calculated based on
-                                    savings rate, budget adherence, and debt-to-income ratio.</p>
-                                <div class="mt-4 flex gap-4 text-sm">
-                                    <div>
-                                        <p class="text-slate-500 uppercase text-[10px] font-bold tracking-wider">Status
-                                        </p>
-                                        <p class="font-bold text-emerald-400" id="healthStatus">Calculating...</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-slate-500 uppercase text-[10px] font-bold tracking-wider">Action
-                                        </p>
-                                        <p class="font-bold text-white" id="healthAction">-</p>
-                                    </div>
-                                </div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Monthly Budget</p>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white"><span
+                                        id="spentThisMonth">₹0</span> <span class="text-sm font-normal text-gray-400">/
+                                        <span id="budgetDisplay">₹0</span></span></h3>
                             </div>
-                            <div class="flex items-center gap-4">
-                                <div class="relative w-24 h-24 flex items-center justify-center">
-                                    <svg class="transform -rotate-90 w-24 h-24">
-                                        <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8"
-                                            fill="transparent" class="text-slate-700" />
-                                        <circle id="healthCircle" cx="48" cy="48" r="40" stroke="currentColor"
-                                            stroke-width="8" fill="transparent"
-                                            class="text-emerald-500 transition-all duration-1000 ease-out"
-                                            stroke-dasharray="251.2" stroke-dashoffset="251.2" />
-                                    </svg>
-                                    <span class="absolute text-2xl font-bold" id="healthScore">0</span>
-                                </div>
+                            <button onclick="openBudgetModal()"
+                                class="text-blue-600 text-sm font-medium hover:underline">Edit Limit</button>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3">
+                            <div id="budgetProgressBar"
+                                class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: 0%">
                             </div>
+                        </div>
+                        <p id="budgetMessage" class="text-xs text-gray-400 mt-2">Set a budget to track progress.</p>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-white">Recent Activity</h3>
+                            <button onclick="showPage('transactions')"
+                                class="text-sm text-blue-500 hover:text-blue-600">View All</button>
+                        </div>
+                        <div id="recentList" class="space-y-3">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-reports" class="hidden space-y-6 max-w-7xl mx-auto pb-10">
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <p class="text-sm text-gray-500 mb-1">Income</p>
+                            <h3 class="text-2xl font-bold text-emerald-600 privacy-sensitive" id="totalIncome">₹0.00
+                            </h3>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <p class="text-sm text-gray-500 mb-1">Expenses</p>
+                            <h3 class="text-2xl font-bold text-rose-600 privacy-sensitive" id="totalExpense">₹0.00</h3>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <p class="text-sm text-gray-500 mb-1">Investments</p>
+                            <h3 class="text-2xl font-bold text-purple-600 privacy-sensitive" id="totalInvestment">₹0.00
+                            </h3>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between">
-                            <div class="flex justify-between items-end mb-2">
-                                <div>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Monthly Budget</p>
-                                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white"><span
-                                            id="spentThisMonth">₹0</span> <span
-                                            class="text-sm font-normal text-gray-400">/ <span
-                                                id="budgetDisplay">₹0</span></span></h3>
-                                </div>
-                                <button onclick="openBudgetModal()"
-                                    class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-50 dark:hover:bg-slate-700 px-3 py-1 rounded-lg transition-colors">Edit</button>
-                            </div>
-                            <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3">
-                                <div id="budgetProgressBar"
-                                    class="bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                                    style="width: 0%"></div>
-                            </div>
-                            <p id="budgetMessage" class="text-xs text-gray-400 mt-2">Set a budget to track progress.</p>
+                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-4">Expense Breakdown</h3>
+                            <div class="relative w-full max-w-[300px] mx-auto"><canvas id="expenseChart"></canvas></div>
                         </div>
                         <div
-                            class="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
-                            <div class="absolute right-0 top-0 p-4 opacity-10"><i
-                                    class="fa-solid fa-brain text-8xl"></i></div>
-                            <h3 class="text-sm font-medium text-indigo-100 mb-4 flex items-center gap-2"><i
-                                    class="fa-solid fa-wand-magic-sparkles"></i> Smart Insights</h3>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div>
-                                    <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Top Category</p>
-                                    <p class="text-sm font-bold truncate" id="insightTopCat">-</p>
-                                    <p class="text-[10px] text-indigo-200" id="insightTopCatAmount">₹0</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Projected</p>
-                                    <p class="text-sm font-bold" id="insightProjection">₹0</p>
-                                    <p class="text-[10px] text-indigo-200">End of Month</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Daily Avg</p>
-                                    <p class="text-sm font-bold" id="insightDailyAvg">₹0</p>
-                                    <p class="text-[10px] text-indigo-200">Last 30 Days</p>
-                                </div>
+                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-4">Spending Trend (7 Days)</h3>
+                            <div class="w-full h-64"><canvas id="trendChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div class="flex justify-between items-center relative z-10">
+                            <div>
+                                <h3 class="text-lg font-bold mb-1">Financial Health</h3>
+                                <p class="text-slate-400 text-sm mb-2" id="healthStatus">Calculating...</p>
+                                <p class="text-xs text-slate-500 max-w-xs" id="healthAction">-</p>
+                            </div>
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="transform -rotate-90 w-20 h-20">
+                                    <circle cx="40" cy="40" r="32" stroke="#334155" stroke-width="6"
+                                        fill="transparent" />
+                                    <circle id="healthCircle" cx="40" cy="40" r="32" stroke="#10b981" stroke-width="6"
+                                        fill="transparent" stroke-dasharray="200" stroke-dashoffset="200"
+                                        class="transition-all duration-1000" />
+                                </svg>
+                                <span class="absolute text-xl font-bold" id="healthScore">0</span>
                             </div>
                         </div>
                     </div>
 
-                    <div id="categoryBudgetsSection"
-                        class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Category Budgets</h3>
-                        <div id="categoryBudgetsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
-                            <div class="absolute right-0 top-0 p-6 opacity-10"><i
-                                    class="fa-solid fa-scale-balanced text-6xl text-blue-600 dark:text-blue-400"></i>
-                            </div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Balance</p>
-                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalBalance">₹0.00</h3>
-                        </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
-                            <div class="absolute right-0 top-0 p-6 opacity-10"><i
-                                    class="fa-solid fa-arrow-trend-up text-6xl text-emerald-500"></i></div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Income</p>
-                            <h3 class="text-2xl font-bold text-emerald-600" id="totalIncome">₹0.00</h3>
-                        </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
-                            <div class="absolute right-0 top-0 p-6 opacity-10"><i
-                                    class="fa-solid fa-arrow-trend-down text-6xl text-rose-500"></i></div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Expenses</p>
-                            <h3 class="text-2xl font-bold text-rose-600" id="totalExpense">₹0.00</h3>
-                        </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
-                            <div class="absolute right-0 top-0 p-6 opacity-10"><i
-                                    class="fa-solid fa-piggy-bank text-6xl text-purple-500"></i></div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Total Invested</p>
-                            <h3 class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="totalInvestment">
-                                ₹0.00</h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-1 space-y-6">
-                            <div
-                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center justify-center">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white w-full mb-4">By Category</h3>
-                                <div class="relative w-full max-w-[280px]"><canvas id="expenseChart"></canvas></div>
-                                <div id="chartLegend" class="w-full mt-6 space-y-2 text-sm"></div>
-                            </div>
-                        </div>
-                        <div class="lg:col-span-2 space-y-6">
-                            <div
-                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Monthly Comparison</h3>
-                                <div class="w-full h-64"><canvas id="comparisonChart"></canvas></div>
-                            </div>
-                            <div
-                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Spending Trend (Last 7
-                                    Days)</h3>
-                                <div class="w-full h-64"><canvas id="trendChart"></canvas></div>
-                            </div>
-                            <div
-                                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Recent Transactions</h3>
-                                    <button onclick="showPage('transactions')"
-                                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">View
-                                        All</button>
-                                </div>
-                                <div class="overflow-y-auto pr-2" style="max-height: 400px;">
-                                    <div id="recentList" class="space-y-3">
-                                        <div class="text-center py-10 text-gray-400">
-                                            <div class="loader mx-auto mb-3"></div>
-                                            <p>Loading data...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="heatmapSection" class="hidden md:block"></div>
                 </div>
 
                 <div id="view-family" class="hidden max-w-7xl mx-auto space-y-8 pb-10">
@@ -716,54 +629,6 @@
                     </div>
                 </div>
 
-                <div id="view-tools" class="hidden max-w-3xl mx-auto pb-10">
-                    <div
-                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                <i class="fa-solid fa-utensils"></i> Split Bill Calculator
-                            </h3>
-                        </div>
-                        <div class="p-6 space-y-4">
-                            <div class="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label
-                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total
-                                        Bill</label>
-                                    <input type="number" id="splitTotal"
-                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder="0.00">
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">People</label>
-                                    <input type="number" id="splitPeople" value="2"
-                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tip
-                                        %</label>
-                                    <input type="number" id="splitTip" value="0"
-                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                            </div>
-                            <button onclick="calculateSplit()"
-                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg">Calculate</button>
-
-                            <div id="splitResult"
-                                class="hidden mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 text-center">
-                                <p class="text-sm text-indigo-500 dark:text-indigo-300 uppercase font-bold mb-1">Per
-                                    Person</p>
-                                <h3 class="text-3xl font-bold text-indigo-700 dark:text-indigo-200 mb-4"
-                                    id="splitPerPerson">₹0.00</h3>
-                                <button onclick="logSplitShare()"
-                                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Log
-                                    My Share</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6 pb-10">
                     <div
                         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
@@ -842,6 +707,52 @@
                                     <button onclick="savePin()"
                                         class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium">Save</button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-utensils"></i> Split Bill Calculator
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total
+                                        Bill</label>
+                                    <input type="number" id="splitTotal"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">People</label>
+                                    <input type="number" id="splitPeople" value="2"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Tip
+                                        %</label>
+                                    <input type="number" id="splitTip" value="0"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <button onclick="calculateSplit()"
+                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg">Calculate</button>
+
+                            <div id="splitResult"
+                                class="hidden mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 text-center">
+                                <p class="text-sm text-indigo-500 dark:text-indigo-300 uppercase font-bold mb-1">Per
+                                    Person</p>
+                                <h3 class="text-3xl font-bold text-indigo-700 dark:text-indigo-200 mb-4"
+                                    id="splitPerPerson">₹0.00</h3>
+                                <button onclick="logSplitShare()"
+                                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Log
+                                    My Share</button>
                             </div>
                         </div>
                     </div>
@@ -1213,6 +1124,42 @@
                 </div>
 
                 <div id="formStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="onboardingModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm"></div>
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 text-center">
+                <div
+                    class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+                    <i class="fa-solid fa-hand-sparkles"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Welcome to ExpenseFlow!</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8">Let's get your account set up in seconds.</p>
+
+                <form id="onboardingForm" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">1. Choose Currency</label>
+                        <select id="setupCurrency"
+                            class="w-full p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl outline-none">
+                            <option value="INR">🇮🇳 Rupee (₹)</option>
+                            <option value="USD">🇺🇸 Dollar ($)</option>
+                            <option value="EUR">🇪🇺 Euro (€)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">2. Monthly Budget
+                            Goal</label>
+                        <input type="number" id="setupBudget" placeholder="e.g. 25000"
+                            class="w-full p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl outline-none">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg mt-4">
+                        Get Started <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

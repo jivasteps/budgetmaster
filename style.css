@@ -570,8 +570,10 @@ body {
 }
 
 .dark #familyModal .bg-white {
-    background-color: #1e293b; /* Dark Slate background */
-    color: #f8fafc; /* Light text */
+    background-color: #1e293b;
+    /* Dark Slate background */
+    color: #f8fafc;
+    /* Light text */
 }
 
 /* 2. Labels (Fixes unreadable "Role" text) */
@@ -579,12 +581,14 @@ body {
     display: block;
     margin-bottom: 6px;
     font-weight: 600;
-    color: #475569; /* Slate-600 */
+    color: #475569;
+    /* Slate-600 */
     font-size: 0.9rem;
 }
 
 .dark #familyModal label {
-    color: #cbd5e1; /* Slate-300 (Readable on dark) */
+    color: #cbd5e1;
+    /* Slate-300 (Readable on dark) */
 }
 
 /* 3. Inputs & Dropdowns (Fixes bright white inputs) */
@@ -599,21 +603,26 @@ body {
     font-size: 1rem;
     outline: none;
     transition: all 0.2s;
-    appearance: none; /* Removes default OS styling for dropdowns */
+    appearance: none;
+    /* Removes default OS styling for dropdowns */
 }
 
 /* Dark Mode for Inputs */
 .dark #familyModal input,
 .dark #familyModal select {
-    background-color: #334155; /* Slate-700 */
-    border-color: #475569;     /* Slate-600 */
+    background-color: #334155;
+    /* Slate-700 */
+    border-color: #475569;
+    /* Slate-600 */
     color: #ffffff;
 }
 
 .dark #familyModal input:focus,
 .dark #familyModal select:focus {
-    border-color: #3b82f6; /* Blue focus ring */
-    background-color: #0f172a; /* Darker background on focus */
+    border-color: #3b82f6;
+    /* Blue focus ring */
+    background-color: #0f172a;
+    /* Darker background on focus */
 }
 
 /* 4. Fix the "My Family Account" White Card */
@@ -623,11 +632,13 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 16px;
-    box-shadow: none; /* Remove heavy shadow inside modal */
+    box-shadow: none;
+    /* Remove heavy shadow inside modal */
 }
 
 .dark #familyModal .invite-card {
-    background-color: #0f172a; /* Very dark slate to contrast with modal */
+    background-color: #0f172a;
+    /* Very dark slate to contrast with modal */
     border-color: #334155;
 }
 
@@ -656,8 +667,10 @@ body {
 
 #formStatus p {
     padding: 12px;
-    background-color: #dcfce7; /* Green-100 */
-    color: #166534; /* Green-800 */
+    background-color: #dcfce7;
+    /* Green-100 */
+    color: #166534;
+    /* Green-800 */
     border-radius: 8px;
     font-weight: 600;
     text-align: center;
@@ -680,25 +693,27 @@ body {
    ========================================= */
 
 @media (max-width: 768px) {
-    
+
     /* 1. Fix Shopping List Input (Stack them vertically) */
     .shopping-input-group {
         flex-direction: column;
         gap: 12px;
         padding: 16px;
     }
-    
+
     .shopping-input-group input {
-        width: 100%; /* Full width */
+        width: 100%;
+        /* Full width */
     }
 
     /* Fix the 'Cost' wrapper width */
     .shopping-input-group .relative {
-        width: 100%; 
+        width: 100%;
     }
 
     .shopping-input-group button {
-        width: 100%; /* Big button for easy tapping */
+        width: 100%;
+        /* Big button for easy tapping */
         padding: 12px;
     }
 
@@ -708,11 +723,13 @@ body {
         right: 20px;
         top: 20px;
         width: auto;
-        align-items: stretch; /* Make toasts full width */
+        align-items: stretch;
+        /* Make toasts full width */
     }
 
     .toast {
-        min-width: 0; /* Allow shrinking */
+        min-width: 0;
+        /* Allow shrinking */
         max-width: 100%;
         width: 100%;
     }
@@ -722,24 +739,26 @@ body {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     #inviteLinkContainer input {
         width: 100%;
         text-overflow: ellipsis;
     }
-    
+
     #inviteLinkContainer button {
         width: 100%;
     }
 
     /* 4. Adjust Modal Padding */
     .absolute.left-1\/2 {
-        width: 95%; /* 95% width on mobile */
+        width: 95%;
+        /* 95% width on mobile */
         padding: 0;
     }
-    
+
     /* 5. Hide heavy charts or tables if needed (Optional) */
     .heatmap-container {
-        display: none; /* Hide heatmap on very small screens to prevent overflow */
+        display: none;
+        /* Hide heatmap on very small screens to prevent overflow */
     }
 }

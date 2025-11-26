@@ -112,25 +112,41 @@
         }, 4000);
     }
 
-    function startVoiceInput(inputId) {
-        if (!('webkitSpeechRecognition' in window)) {
-            showToast("Voice input not supported in this browser", "error");
-            return;
-        }
-        const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        recognition.onstart = () => { showToast("Listening... Speak now", "info"); };
-        recognition.onresult = (event) => {
-            const text = event.results[0][0].transcript;
-            const input = document.getElementById(inputId);
-            input.value = text;
-            showToast("Note added via voice", "success");
-        };
-        recognition.onerror = (event) => { console.error(event.error); showToast("Voice error: " + event.error, "error"); };
-        recognition.start();
+    function checkOnboarding(user) {
+        // Check if user has settings in DB
+        const docRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('general');
+
+        docRef.get().then((doc) => {
+            // If no settings exist, it's likely a new user -> Show Wizard
+            if (!doc.exists) {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            }
+        });
     }
+
+    // Handle Form Submit
+    document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currency = document.getElementById('setupCurrency').value;
+        const budget = parseFloat(document.getElementById('setupBudget').value) || 0;
+
+        if (currentUser) {
+            await getDbRef('settings').doc('general').set({
+                currency: currency,
+                monthlyBudget: budget,
+                onboarded: true
+            }, { merge: true });
+
+            document.getElementById('onboardingModal').classList.add('hidden');
+            showToast("Setup Complete! Welcome aboard.", "success");
+
+            // Refresh UI
+            currentCurrency = currency;
+            monthlyBudget = budget;
+            updateUI();
+        }
+    });
+
 
     async function initApp() {
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -149,7 +165,7 @@
                 document.getElementById('userAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=374151&color=fff`;
                 document.getElementById('view-landing').classList.add('hidden');
                 document.getElementById('app-layout').classList.remove('hidden');
-
+                checkOnboarding(user);
                 injectPrivacyButton();
 
                 // Check Security
@@ -700,7 +716,7 @@
                 document.execCommand('copy');
                 showToast("Link copied!", "success");
             }
-        }; 
+        };
 
         // ==========================================
         // 2. CHECK FOR JOINED MEMBERS (DISPLAYING)
@@ -733,77 +749,77 @@
         }
 
         // ==========================================
-    // 🌍 EXPOSE FUNCTIONS TO HTML (THE FIX)
-    // ==========================================
-    window.saveBudget = saveBudget;
-    window.openBudgetModal = openBudgetModal;
-    window.closeBudgetModal = closeBudgetModal;
-    
-    // Auth & Navigation
-    window.signInWithGoogle = signInWithGoogle;
-    window.logout = logout;
-    window.toggleTheme = toggleTheme;
-    window.showPage = showPage;
-    window.toggleSidebar = toggleSidebar;
-    
-    // Security (PIN)
-    window.enterPin = enterPin;
-    window.clearPin = clearPin;
-    window.togglePinSetup = togglePinSetup;
-    window.savePin = savePin;
-    
-    // Transaction Modal
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.setType = setType;
-    window.startVoiceInput = startVoiceInput;
-    window.editTransaction = editTransaction;
-    window.deleteTransaction = deleteTransaction;
-    
-    // Family & Shopping
-    window.openFamilyModal = openFamilyModal;
-    window.closeFamilyModal = closeFamilyModal;
-    window.createJointAccount = createJointAccount;
-    window.deleteWallet = deleteWallet;
-    window.deleteFamilyMember = deleteFamilyMember;
-    window.checkoutShoppingList = checkoutShoppingList;
-    window.deleteShoppingItem = deleteShoppingItem;
-    window.toggleShoppingItem = toggleShoppingItem;
-    
-    // Other Modals & Tools
-    window.openGoalModal = openGoalModal;
-    window.closeGoalModal = closeGoalModal;
-    window.editGoal = editGoal;
-    window.deleteGoal = deleteGoal;
-    
-    window.openDebtModal = openDebtModal;
-    window.closeDebtModal = closeDebtModal;
-    window.setDebtType = setDebtType;
-    window.deleteDebt = deleteDebt;
-    window.settleDebt = settleDebt;
-    
-    window.openRecurringModal = openRecurringModal;
-    window.closeRecurringModal = closeRecurringModal;
-    window.deleteRecurring = deleteRecurring;
-    window.payRecurring = payRecurring;
-    
-    window.openCategoryModal = openCategoryModal;
-    window.closeCategoryModal = closeCategoryModal;
-    
-    // Settings & Data
-    window.saveCurrency = saveCurrency;
-    window.exportDataJSON = exportDataJSON;
-    window.importDataJSON = importDataJSON;
-    window.exportCSV = exportCSV;
-    window.exportPDF = exportPDF;
-    
-    // Calendar & Filters
-    window.changeMonth = changeMonth;
-    window.toggleCustomDate = toggleCustomDate;
-    
-    // Split Bill Tool
-    window.calculateSplit = calculateSplit;
-    window.logSplitShare = logSplitShare;
+        // 🌍 EXPOSE FUNCTIONS TO HTML (THE FIX)
+        // ==========================================
+        window.saveBudget = saveBudget;
+        window.openBudgetModal = openBudgetModal;
+        window.closeBudgetModal = closeBudgetModal;
+
+        // Auth & Navigation
+        window.signInWithGoogle = signInWithGoogle;
+        window.logout = logout;
+        window.toggleTheme = toggleTheme;
+        window.showPage = showPage;
+        window.toggleSidebar = toggleSidebar;
+
+        // Security (PIN)
+        window.enterPin = enterPin;
+        window.clearPin = clearPin;
+        window.togglePinSetup = togglePinSetup;
+        window.savePin = savePin;
+
+        // Transaction Modal
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.setType = setType;
+        window.startVoiceInput = startVoiceInput;
+        window.editTransaction = editTransaction;
+        window.deleteTransaction = deleteTransaction;
+
+        // Family & Shopping
+        window.openFamilyModal = openFamilyModal;
+        window.closeFamilyModal = closeFamilyModal;
+        window.createJointAccount = createJointAccount;
+        window.deleteWallet = deleteWallet;
+        window.deleteFamilyMember = deleteFamilyMember;
+        window.checkoutShoppingList = checkoutShoppingList;
+        window.deleteShoppingItem = deleteShoppingItem;
+        window.toggleShoppingItem = toggleShoppingItem;
+
+        // Other Modals & Tools
+        window.openGoalModal = openGoalModal;
+        window.closeGoalModal = closeGoalModal;
+        window.editGoal = editGoal;
+        window.deleteGoal = deleteGoal;
+
+        window.openDebtModal = openDebtModal;
+        window.closeDebtModal = closeDebtModal;
+        window.setDebtType = setDebtType;
+        window.deleteDebt = deleteDebt;
+        window.settleDebt = settleDebt;
+
+        window.openRecurringModal = openRecurringModal;
+        window.closeRecurringModal = closeRecurringModal;
+        window.deleteRecurring = deleteRecurring;
+        window.payRecurring = payRecurring;
+
+        window.openCategoryModal = openCategoryModal;
+        window.closeCategoryModal = closeCategoryModal;
+
+        // Settings & Data
+        window.saveCurrency = saveCurrency;
+        window.exportDataJSON = exportDataJSON;
+        window.importDataJSON = importDataJSON;
+        window.exportCSV = exportCSV;
+        window.exportPDF = exportPDF;
+
+        // Calendar & Filters
+        window.changeMonth = changeMonth;
+        window.toggleCustomDate = toggleCustomDate;
+
+        // Split Bill Tool
+        window.calculateSplit = calculateSplit;
+        window.logSplitShare = logSplitShare;
     });
 
     window.deleteFamilyMember = async (id) => {
@@ -1507,81 +1523,6 @@
         });
     }
 
-    // FEATURE 5: Gamification (Badges)
-    function renderGamification() {
-        let badgeContainer = document.getElementById('gamificationSection');
-
-        if (!badgeContainer) {
-            const dashboardView = document.getElementById('view-dashboard');
-            if (!dashboardView) return;
-
-            badgeContainer = document.createElement('div');
-            badgeContainer.id = 'gamificationSection';
-            badgeContainer.className = "mb-6 grid grid-cols-2 md:grid-cols-4 gap-4";
-
-            dashboardView.insertBefore(badgeContainer, dashboardView.children[1]);
-        }
-
-        badgeContainer.innerHTML = '';
-
-        const badges = [
-            {
-                id: 'debt_free',
-                name: 'Debt Destroyer',
-                icon: 'fa-shield-halved',
-                color: 'text-emerald-500',
-                bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-                unlocked: debts.length === 0 && transactions.length > 0,
-                desc: 'Zero active debts'
-            },
-            {
-                id: 'saver',
-                name: 'Super Saver',
-                icon: 'fa-piggy-bank',
-                color: 'text-blue-500',
-                bg: 'bg-blue-100 dark:bg-blue-900/30',
-                unlocked: goals.some(g => g.saved >= g.target && g.target > 0),
-                desc: 'Hit a savings goal'
-            },
-            {
-                id: 'planner',
-                name: 'Future Planner',
-                icon: 'fa-calendar-check',
-                color: 'text-purple-500',
-                bg: 'bg-purple-100 dark:bg-purple-900/30',
-                unlocked: recurringItems.length >= 3,
-                desc: '3+ recurring items'
-            },
-            {
-                id: 'investor',
-                name: 'Wealth Builder',
-                icon: 'fa-arrow-trend-up',
-                color: 'text-amber-500',
-                bg: 'bg-amber-100 dark:bg-amber-900/30',
-                unlocked: transactions.some(t => t.type === 'investment'),
-                desc: 'Made an investment'
-            }
-        ];
-
-        badges.forEach(b => {
-            const opacity = b.unlocked ? 'opacity-100 badge-enter' : 'opacity-40 grayscale';
-            const statusIcon = b.unlocked ? '<i class="fa-solid fa-check-circle text-emerald-500 absolute top-2 right-2 text-xs"></i>' : '<i class="fa-solid fa-lock text-gray-400 absolute top-2 right-2 text-xs"></i>';
-
-            badgeContainer.innerHTML += `
-                <div class="relative p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-3 ${opacity} transition-all">
-                    ${statusIcon}
-                    <div class="w-10 h-10 rounded-full ${b.bg} flex items-center justify-center ${b.color}">
-                        <i class="fa-solid ${b.icon}"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200">${b.name}</h4>
-                        <p class="text-[10px] text-gray-400">${b.desc}</p>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
     // FEATURE 8: Heatmap
     function renderHeatmap() {
         let heatmapContainer = document.getElementById('heatmapSection');
@@ -1755,9 +1696,24 @@
         else { document.getElementById('emptyState').classList.add('hidden'); filtered.forEach(t => list.innerHTML += createTransactionRowHTML(t, false)); }
     }
     function renderRecentList() {
-        const list = document.getElementById('recentList'); list.innerHTML = '';
+        const list = document.getElementById('recentList');
+        list.innerHTML = '';
         const recent = transactions.slice(0, 5);
-        if (recent.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 dark:text-gray-500 py-4 text-sm">No transactions yet.</div>`; return; }
+
+        if (recent.length === 0) {
+            list.innerHTML = `
+            <div class="text-center py-8 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
+                <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">No transactions yet.</p>
+                <button onclick="openModal()" class="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-slate-700/50 px-4 py-2 rounded-lg transition-colors">
+                    + Add First Expense
+                </button>
+            </div>
+        `;
+            return;
+        }
         recent.forEach(t => list.innerHTML += createTransactionRowHTML(t, true));
     }
 
