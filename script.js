@@ -43,7 +43,7 @@
     let pinInput = "";
     let currentCurrency = 'INR';
 
-    // NEW: Feature Flags
+    // Feature Flags
     let isPrivacyMode = false;
 
     const defaultCategoriesList = [
@@ -72,6 +72,7 @@
         { id: 'card', name: 'Credit Card' }
     ];
 
+    // HELPER: Get DB Path for Current Household
     function getDbRef(collectionName) {
         if (!currentHouseholdId) {
             console.error("No household ID found!");
@@ -149,7 +150,6 @@
                 document.getElementById('view-landing').classList.add('hidden');
                 document.getElementById('app-layout').classList.remove('hidden');
 
-                // FEATURE 6: Inject Privacy Button
                 injectPrivacyButton();
 
                 // Check Security
@@ -165,11 +165,28 @@
                         }
                     });
 
-                // HOUSEHOLD LOGIC
+                // --- HOUSEHOLD JOINING & CREATION LOGIC ---
+                const urlParams = new URLSearchParams(window.location.search);
+                const inviteCode = urlParams.get('invite');
+
                 const userRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid);
                 const userDoc = await userRef.get();
 
-                if (userDoc.exists && userDoc.data().householdId) {
+                // 1. Join via Invite Link
+                if (inviteCode) {
+                    currentHouseholdId = inviteCode;
+                    await userRef.set({
+                        email: user.email,
+                        householdId: currentHouseholdId,
+                        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    showToast("✅ Joined Household Successfully!", "success");
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+                // 2. Existing User or New Household
+                else if (userDoc.exists && userDoc.data().householdId) {
                     currentHouseholdId = userDoc.data().householdId;
                     showToast("Synced with Household", "success");
                 } else {
@@ -220,9 +237,7 @@
 
     // --- FEATURE 6: Privacy Mode ---
     function injectPrivacyButton() {
-        // Avoid duplicates
         if (document.getElementById('privacyBtn')) return;
-
         const headerActions = document.querySelector('header .flex.items-center.gap-2');
         if (headerActions) {
             const btn = document.createElement('button');
@@ -231,8 +246,6 @@
             btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
             btn.title = "Toggle Privacy Mode";
             btn.onclick = togglePrivacyMode;
-
-            // Insert as first item
             headerActions.insertBefore(btn, headerActions.firstChild);
         }
     }
@@ -253,28 +266,20 @@
             body.classList.remove('privacy-active');
             showToast("Privacy Mode Off", "info");
         }
-        // Trigger UI update to apply classes to specific elements if needed, 
-        // though CSS class on body handles blur automatically
     }
 
     // --- FEATURE 7: Smart Bill Reminders ---
     function checkBillReminders() {
         if (!recurringItems.length) return;
-
         const today = new Date().getDate();
         const dueToday = recurringItems.filter(item => item.day === today);
 
         if (dueToday.length > 0) {
-            // Request permission
             if ("Notification" in window && Notification.permission !== "granted") {
                 Notification.requestPermission();
             }
-
             dueToday.forEach(bill => {
-                // Send in-app toast
                 showToast(`Bill Due Today: ${bill.name} (${formatCurrency(bill.amount)})`, 'warning');
-
-                // Send System Notification
                 if ("Notification" in window && Notification.permission === "granted") {
                     new Notification("Bill Reminder 📅", {
                         body: `${bill.name} is due today! Amount: ${formatCurrency(bill.amount)}`,
@@ -288,15 +293,13 @@
     // --- FEATURE 8: Spending Heatmap ---
     function renderHeatmap() {
         let heatmapContainer = document.getElementById('heatmapSection');
-
         if (!heatmapContainer) {
             const dashboardView = document.getElementById('view-dashboard');
             if (!dashboardView) return;
 
-            // Create Wrapper
             heatmapContainer = document.createElement('div');
             heatmapContainer.id = 'heatmapSection';
-            heatmapContainer.className = "bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6 hidden md:block"; // Hidden on mobile to save space
+            heatmapContainer.className = "bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6 hidden md:block";
 
             heatmapContainer.innerHTML = `
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Spending Habits (Last 365 Days)</h3>
@@ -312,19 +315,15 @@
                     <span>More</span>
                 </div>
             `;
-
-            // Insert at bottom of dashboard
             dashboardView.appendChild(heatmapContainer);
         }
 
         const grid = document.getElementById('heatmapGrid');
         grid.innerHTML = '';
 
-        // 1. Generate data map for last 365 days
         const dateMap = {};
         const today = new Date();
 
-        // Pre-fill with 0
         for (let i = 0; i < 365; i++) {
             const d = new Date();
             d.setDate(today.getDate() - i);
@@ -332,7 +331,6 @@
             dateMap[dateStr] = 0;
         }
 
-        // Fill with transaction data
         let maxSpend = 0;
         transactions.filter(t => t.type === 'expense').forEach(t => {
             if (dateMap.hasOwnProperty(t.date)) {
@@ -341,29 +339,20 @@
             }
         });
 
-        // 2. Render Grid (Reverse loop to show past -> today)
-        // We need to align by week (Sunday start). 
-        // Simplified approach: Just 52 columns x 7 rows
-
-        // Find start date (365 days ago)
         const startDate = new Date();
         startDate.setDate(today.getDate() - 365);
-
-        // Adjust to start on Sunday for clean grid
         while (startDate.getDay() !== 0) {
             startDate.setDate(startDate.getDate() - 1);
         }
 
         let currentDate = new Date(startDate);
-
         while (currentDate <= today) {
             const dateStr = currentDate.toISOString().split('T')[0];
             const amount = dateMap[dateStr] || 0;
 
-            // Calculate Intensity (0-4)
             let intensity = 0;
             if (amount > 0) {
-                const ratio = amount / (maxSpend || 1); // Avoid div by 0
+                const ratio = amount / (maxSpend || 1);
                 if (ratio > 0.75) intensity = 4;
                 else if (ratio > 0.5) intensity = 3;
                 else if (ratio > 0.25) intensity = 2;
@@ -375,7 +364,6 @@
             cell.title = `${dateStr}: ${formatCurrency(amount)}`;
 
             grid.appendChild(cell);
-
             currentDate.setDate(currentDate.getDate() + 1);
         }
     }
@@ -465,9 +453,7 @@
 
     // --- CURRENCY & DATA MGMT ---
     function formatCurrency(num) {
-        // PRIVACY CHECK
         if (isPrivacyMode) return '****';
-
         const symbolMap = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' };
         const symbol = symbolMap[currentCurrency] || '₹';
         const locale = currentCurrency === 'INR' ? 'en-IN' : 'en-US';
@@ -657,19 +643,51 @@
     function openFamilyModal() { document.getElementById('familyForm').reset(); familyModal.classList.remove('hidden'); }
     function closeFamilyModal() { familyModal.classList.add('hidden'); }
 
+    // --- INVITE MEMBER (WRITES TO FIRESTORE FOR CLOUD FUNCTION) ---
     document.getElementById('familyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const name = document.getElementById('famName').value;
+        const email = document.getElementById('famEmail').value;
+        const role = document.getElementById('famRole').value;
+        const access = document.getElementById('famAccess').value;
+
+        const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${currentHouseholdId}`;
+
         const data = {
-            name: document.getElementById('famName').value,
-            role: document.getElementById('famRole').value,
-            access: document.getElementById('famAccess').value,
+            name: name,
+            role: role,
+            access: access,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
         try {
+            // 1. Add member locally
             await getDbRef('family').add(data);
+
+            // 2. Queue Email for Backend (Nodemailer)
+            // Note: This writes to a root-level collection 'mail_queue' so the backend can see it easily
+            await db.collection('mail_queue').add({
+                to_email: email,
+                to_name: name,
+                from_name: currentUser.displayName || "ExpenseFlow User",
+                invite_link: inviteLink,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // 3. Fallback Copy
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    showToast("Link copied to clipboard!", "info");
+                });
+            }
+
             closeFamilyModal();
-            showToast("Member added", "success");
-        } catch (err) { showToast("Error adding member", "error"); }
+            showToast("Invite queued. Sending email...", "success");
+        } catch (err) {
+            console.error(err);
+            showToast("Error queuing invite", "error");
+        }
     });
 
     window.deleteFamilyMember = async (id) => {
@@ -938,7 +956,6 @@
             recurringItems = [];
             snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
             renderRecurring();
-            // Check reminders whenever data updates
             checkBillReminders();
         });
     }
@@ -1038,7 +1055,6 @@
             const dayTxns = transactions.filter(t => t.date === dateStr && t.type === 'expense');
             const total = dayTxns.reduce((sum, t) => sum + Number(t.amount), 0);
 
-            // Future projections
             let projectedTotal = 0;
             let recurringNames = [];
             const dateObj = new Date(year, month, day);
@@ -1158,7 +1174,6 @@
         } else { bar.style.width = "0%"; msg.textContent = "No budget set."; }
     }
 
-    // FEATURE 4: Predictive Financial Health
     function calculateFinancialHealth() {
         let income = 0;
         let expenses = 0;
@@ -1187,10 +1202,7 @@
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const daysRemaining = daysInMonth - today;
 
-        // Calculate Average Daily Spend (ADS)
         const dailyAverage = today > 0 ? expenses / today : expenses;
-
-        // Forecast
         const projectedSpend = expenses + (dailyAverage * daysRemaining);
         const budget = monthlyBudget || 0;
 
@@ -1210,7 +1222,6 @@
             predictionMsg = "Set a budget to see forecasts.";
         }
 
-        // SCORING
         let savingsScore = 0;
         if (income > 0) {
             const savingsRate = (income - expenses) / income;
@@ -1233,7 +1244,6 @@
 
         const totalScore = Math.round((savingsScore * 0.4) + (budgetScore * 0.3) + (debtScore * 0.3));
 
-        // Update UI
         const circle = document.getElementById('healthCircle');
         const scoreText = document.getElementById('healthScore');
         const statusText = document.getElementById('healthStatus');
@@ -1283,7 +1293,6 @@
         document.getElementById('insightDailyAvg').textContent = formatCurrency(recentSpent / 30);
     }
 
-    // NEW: Net Worth Calculation
     function calculateNetWorth() {
         let cash = 0;
         let invested = 0;
@@ -1318,13 +1327,11 @@
         document.getElementById('nwSavings').textContent = formatCurrency(savings);
         document.getElementById('nwDebt').textContent = formatCurrency(debt);
 
-        // Apply privacy if active
         if (isPrivacyMode) {
             document.querySelectorAll('.privacy-sensitive').forEach(el => el.classList.add('privacy-sensitive'));
         }
     }
 
-    // NEW: Category Budget Calculation
     function renderCategoryBudgets() {
         const section = document.getElementById('categoryBudgetsSection');
         const grid = document.getElementById('categoryBudgetsGrid');
@@ -1365,7 +1372,7 @@
         });
     }
 
-    // FEATURE 5: Gamification (Badges)
+    // FEATURE 5: Gamification
     function renderGamification() {
         let badgeContainer = document.getElementById('gamificationSection');
 
@@ -1440,7 +1447,6 @@
         });
     }
 
-    // SPLIT BILL
     function calculateSplit() {
         const total = parseFloat(document.getElementById('splitTotal').value) || 0;
         const people = parseInt(document.getElementById('splitPeople').value) || 1;
@@ -1469,9 +1475,7 @@
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
         calculateFinancialHealth();
         renderGamification();
-        renderHeatmap(); // FEATURE 8
-
-        // Re-apply privacy mode classes
+        renderHeatmap();
         if (isPrivacyMode) document.body.classList.add('privacy-active');
     }
     function renderSummary() {
@@ -1487,7 +1491,6 @@
         document.getElementById('totalInvestment').textContent = formatCurrency(inv);
         document.getElementById('totalBalance').textContent = formatCurrency(inc - exp - inv);
 
-        // Add Privacy Class
         document.getElementById('totalIncome').classList.add('privacy-sensitive');
         document.getElementById('totalExpense').classList.add('privacy-sensitive');
         document.getElementById('totalInvestment').classList.add('privacy-sensitive');
