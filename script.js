@@ -146,14 +146,53 @@
         }, 4000);
     }
 
+    let isGuest = false; // Add this global flag at the top with other variables
+
+    // 1. NEW: Continue as Guest
+    window.continueAsGuest = function () {
+        isGuest = true;
+        document.getElementById('view-landing').classList.add('hidden');
+        document.getElementById('app-layout').classList.remove('hidden');
+
+        // Update UI to show Guest state
+        document.getElementById('userName').textContent = "Guest User";
+        document.getElementById('userEmail').textContent = "Read Only Mode";
+        document.getElementById('userAvatar').src = "https://ui-avatars.com/api/?name=Guest&background=gray&color=fff";
+
+        checkOnboarding(null); // Run check for guest
+        initApp(); // Initialize listeners (empty for guest)
+    };
+
+    // 2. UPDATED: Check Onboarding (Fixes the "Every Refresh" bug)
     function checkOnboarding(user) {
-        // Check if user has settings in DB
+        // A. Guest Check: Look in LocalStorage
+        if (isGuest || !user) {
+            // Show Google Button inside modal for guests
+            const googleBtn = document.getElementById('onboardingGoogleBtn');
+            if (googleBtn) googleBtn.classList.remove('hidden');
+
+            if (!localStorage.getItem('guest_onboarded')) {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            }
+            return;
+        }
+
+        // B. Logged In User Check: Look in LocalStorage FIRST (for speed), then Firestore
+        if (localStorage.getItem(`onboarded_${user.uid}`)) {
+            return; // User already finished setup previously
+        }
+
         const docRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('general');
 
         docRef.get().then((doc) => {
-            // If no settings exist, it's likely a new user -> Show Wizard
-            if (!doc.exists) {
+            if (!doc.exists || !doc.data().onboarded) {
                 document.getElementById('onboardingModal').classList.remove('hidden');
+                // Hide Google Button for logged in users
+                const googleBtn = document.getElementById('onboardingGoogleBtn');
+                if (googleBtn) googleBtn.classList.add('hidden');
+            } else {
+                // Cache it locally so we don't check DB on next refresh
+                localStorage.setItem(`onboarded_${user.uid}`, 'true');
             }
         });
     }
@@ -164,21 +203,30 @@
         const currency = document.getElementById('setupCurrency').value;
         const budget = parseFloat(document.getElementById('setupBudget').value) || 0;
 
+        // Apply settings immediately to UI
+        currentCurrency = currency;
+        monthlyBudget = budget;
+        updateUI();
+
         if (currentUser) {
+            // REAL USER: Save to Firestore
             await getDbRef('settings').doc('general').set({
                 currency: currency,
                 monthlyBudget: budget,
                 onboarded: true
             }, { merge: true });
 
-            document.getElementById('onboardingModal').classList.add('hidden');
-            showToast("Setup Complete! Welcome aboard.", "success");
-
-            // Refresh UI
-            currentCurrency = currency;
-            monthlyBudget = budget;
-            updateUI();
+            // Cache success
+            localStorage.setItem(`onboarded_${currentUser.uid}`, 'true');
+        } else {
+            // GUEST: Save to LocalStorage only
+            localStorage.setItem('guest_onboarded', 'true');
+            localStorage.setItem('guest_currency', currency);
+            localStorage.setItem('guest_budget', budget);
         }
+
+        document.getElementById('onboardingModal').classList.add('hidden');
+        showToast("Setup Complete!", "success");
     });
 
 
@@ -278,6 +326,16 @@
                 document.getElementById('app-layout').classList.add('hidden');
             }
         });
+
+        // If Guest, load from LocalStorage
+        if (!currentUser && isGuest) {
+            if (localStorage.getItem('guest_currency')) {
+                currentCurrency = localStorage.getItem('guest_currency');
+                monthlyBudget = parseFloat(localStorage.getItem('guest_budget')) || 0;
+                document.getElementById('currencySelect').value = currentCurrency;
+                updateUI();
+            }
+        }
 
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !auth.currentUser) {
             try { await auth.signInWithCustomToken(__initial_auth_token); } catch (e) { }
@@ -466,8 +524,6 @@
             categories: Object.values(categoryMap),
             wallets: wallets,
             goals: goals,
-            debts: debts,
-            recurring: recurringItems,
             shopping: shoppingItems,
             family: familyMembers
         };
@@ -868,6 +924,7 @@
     function closeCategoryModal() { document.getElementById('categoryModal').classList.add('hidden'); }
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) return showToast("Please log in to save goals.", "error");
         const newCat = {
             name: document.getElementById('catName').value,
             type: document.getElementById('type').value,
@@ -954,6 +1011,7 @@
     }
     document.getElementById('debtForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) return showToast("Please log in to save goals.", "error");
         const data = {
             type: document.getElementById('debtType').value,
             person: document.getElementById('debtPerson').value,
@@ -1035,6 +1093,7 @@
 
     document.getElementById('shoppingForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) return showToast("Please log in to save goals.", "error");
         const data = {
             name: document.getElementById('shopItem').value,
             cost: parseFloat(document.getElementById('shopCost').value) || 0,
@@ -1132,6 +1191,7 @@
 
     document.getElementById('recurringForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) return showToast("Please log in to save goals.", "error");
         const data = {
             name: document.getElementById('recName').value,
             amount: parseFloat(document.getElementById('recAmount').value),
@@ -1657,7 +1717,7 @@
         goalModal.classList.remove('hidden');
     }
     document.getElementById('goalForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); if (!currentUser) return;
+        e.preventDefault(); if (!currentUser) return showToast("Please log in to save goals.", "error");
         const id = document.getElementById('goalId').value;
         const data = {
             name: document.getElementById('goalName').value,
@@ -2018,7 +2078,7 @@
     }
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); if (!currentUser) return;
+        e.preventDefault(); if (!currentUser) return showToast("Please log in to save data.", "error");
         const editId = document.getElementById('editId').value;
         const data = {
             type: document.getElementById('type').value,

@@ -86,11 +86,17 @@
                 <p class="text-gray-500 dark:text-gray-400">Track expenses, set budgets, and visualize your financial
                     health.</p>
             </div>
-            <button onclick="signInWithGoogle()"
-                class="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all group relative overflow-hidden bg-white dark:bg-slate-800">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google Logo">
-                <span class="font-semibold text-gray-700 dark:text-gray-200">Sign in with Google</span>
-            </button>
+            <div class="space-y-4 w-full"> <button onclick="signInWithGoogle()"
+                    class="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all group relative overflow-hidden bg-white dark:bg-slate-800">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google Logo">
+                    <span class="font-semibold text-gray-700 dark:text-gray-200">Sign in with Google</span>
+                </button>
+
+                <button onclick="continueAsGuest()"
+                    class="w-full py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                    Skip & Continue as Guest
+                </button>
+            </div>
             <p class="text-xs text-gray-400 mt-8">Secure & Private • Powered by Firebase</p>
         </div>
     </div>
@@ -1265,8 +1271,14 @@
                             class="w-full p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl outline-none">
                     </div>
                     <button type="submit"
-                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg mt-4">
-                        Get Started <i class="fa-solid fa-arrow-right ml-2"></i>
+                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg">
+                        Save & Continue <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+
+                    <button type="button" id="onboardingGoogleBtn" onclick="signInWithGoogle()"
+                        class="hidden w-full py-3 border border-gray-200 dark:border-slate-600 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5">
+                        <span class="text-sm font-semibold">Sign in to Save Data</span>
                     </button>
                 </form>
             </div>
