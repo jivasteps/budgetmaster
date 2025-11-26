@@ -71,11 +71,67 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider).catch((error) => {
             if (error.code === 'auth/unauthorized-domain') {
-                alert(`⚠️ DOMAIN NOT AUTHORIZED ⚠️\nAdd this to Firebase Console > Auth > Settings > Authorized Domains:\n${window.location.hostname}`);
-            } else { alert("Login failed: " + error.message); }
+                showToast(`⚠️ DOMAIN NOT AUTHORIZED ⚠️\nAdd this to Firebase Console > Auth > Settings > Authorized Domains:\n${window.location.hostname}`, 'error');
+            } else { showToast("Login failed: " + error.message, 'error'); }
         });
     }
     function logout() { auth.signOut().then(() => window.location.reload()); }
+
+    // --- NEW: TOAST NOTIFICATIONS ---
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        let icon = 'fa-circle-info';
+        if (type === 'success') icon = 'fa-circle-check';
+        if (type === 'error') icon = 'fa-circle-exclamation';
+
+        toast.innerHTML = `
+            <i class="fa-solid ${icon} toast-icon"></i>
+            <span class="toast-content">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 4000);
+    }
+
+    // --- NEW: VOICE INPUT ---
+    function startVoiceInput(inputId) {
+        if (!('webkitSpeechRecognition' in window)) {
+            showToast("Voice input not supported in this browser", "error");
+            return;
+        }
+
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            showToast("Listening... Speak now", "info");
+        };
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            const input = document.getElementById(inputId);
+            input.value = text;
+            showToast("Note added via voice", "success");
+        };
+
+        recognition.onerror = (event) => {
+            console.error(event.error);
+            showToast("Voice error: " + event.error, "error");
+        };
+
+        recognition.start();
+    }
+
 
     async function initApp() {
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -165,7 +221,7 @@
             pinInput = "";
             updatePinDots();
         } else {
-            alert("Incorrect PIN");
+            showToast("Incorrect PIN", "error");
             pinInput = "";
             updatePinDots();
         }
@@ -196,11 +252,11 @@
         const val = document.getElementById('settingPin').value;
         if (val.length === 4 && !isNaN(val)) {
             await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('security').set({ pin: val });
-            alert("PIN Set Successfully!");
+            showToast("PIN Set Successfully!", "success");
             document.getElementById('settingPin').value = "";
             userPin = val;
         } else {
-            alert("PIN must be 4 digits");
+            showToast("PIN must be 4 digits", "error");
         }
     }
 
@@ -290,10 +346,10 @@
                         importColl('family', data.family)
                     ]);
 
-                    alert("Import Complete! Reloading...");
-                    window.location.reload();
+                    showToast("Import Complete! Reloading...", "success");
+                    setTimeout(() => window.location.reload(), 1500);
                 }
-            } catch (err) { console.error(err); alert("Invalid JSON file"); }
+            } catch (err) { console.error(err); showToast("Invalid JSON file", "error"); }
         };
         reader.readAsText(file);
     }
@@ -421,12 +477,14 @@
         try {
             await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('family').add(data);
             closeFamilyModal();
-        } catch (err) { alert("Error adding member"); }
+            showToast("Member added", "success");
+        } catch (err) { showToast("Error adding member", "error"); }
     });
 
     window.deleteFamilyMember = async (id) => {
         if (confirm("Remove this family member?")) {
             await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('family').doc(id).delete();
+            showToast("Member removed", "info");
         }
     };
 
@@ -437,6 +495,7 @@
                 name: name,
                 type: 'joint'
             });
+            showToast("Joint account created", "success");
         }
     };
 
@@ -500,7 +559,11 @@
             budget: parseFloat(document.getElementById('catBudget').value) || 0,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat); closeCategoryModal(); } catch (err) { alert("Error"); }
+        try {
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat);
+            closeCategoryModal();
+            showToast("Category saved", "success");
+        } catch (err) { showToast("Error saving category", "error"); }
     });
 
     // --- DEBTS ---
@@ -571,7 +634,11 @@
             status: 'pending',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').add(data); closeDebtModal(); } catch (e) { alert("Error"); }
+        try {
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').add(data);
+            closeDebtModal();
+            showToast("Debt record added", "success");
+        } catch (e) { showToast("Error adding debt", "error"); }
     });
     window.deleteDebt = async (id) => { if (confirm("Delete record?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
     window.settleDebt = async (id) => { if (confirm("Mark as settled?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
@@ -635,7 +702,8 @@
             await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').add(data);
             document.getElementById('shopItem').value = '';
             document.getElementById('shopCost').value = '';
-        } catch (e) { alert("Error"); }
+            showToast("Item added to list", "success");
+        } catch (e) { showToast("Error adding item", "error"); }
     });
 
     window.toggleShoppingItem = async (id, checked) => {
@@ -648,7 +716,7 @@
 
     window.checkoutShoppingList = async () => {
         const checkedItems = shoppingItems.filter(i => i.checked);
-        if (checkedItems.length === 0) return alert("No items selected!");
+        if (checkedItems.length === 0) return showToast("No items selected!", "info");
 
         const totalCost = checkedItems.reduce((sum, i) => sum + i.cost, 0);
         const itemsDesc = "Shopping: " + checkedItems.map(i => i.name).join(", ");
@@ -726,7 +794,11 @@
             day: parseInt(document.getElementById('recDay').value),
             category: document.getElementById('recCategory').value
         };
-        try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').add(data); closeRecurringModal(); } catch (e) { alert("Error"); }
+        try {
+            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').add(data);
+            closeRecurringModal();
+            showToast("Subscription added", "success");
+        } catch (e) { showToast("Error adding subscription", "error"); }
     });
 
     window.deleteRecurring = async (id) => { if (confirm("Delete?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').doc(id).delete(); };
@@ -846,9 +918,10 @@
     function closeBudgetModal() { document.getElementById('budgetModal').classList.add('hidden'); }
     async function saveBudget() {
         const val = parseFloat(document.getElementById('budgetInput').value);
-        if (isNaN(val) || val < 0) return alert("Invalid budget");
+        if (isNaN(val) || val < 0) return showToast("Invalid budget", "error");
         await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('general').set({ monthlyBudget: val }, { merge: true });
         closeBudgetModal();
+        showToast("Budget updated", "success");
     }
     function updateBudgetUI() {
         const now = new Date();
@@ -863,6 +936,84 @@
             else if (pct > 80) { bar.className = "bg-orange-400 h-3 rounded-full transition-all"; msg.textContent = "Approaching limit."; msg.className = "text-xs text-orange-500 mt-2"; }
             else { bar.className = "bg-emerald-500 h-3 rounded-full transition-all"; msg.textContent = "Within budget."; msg.className = "text-xs text-gray-400 dark:text-gray-500 mt-2"; }
         } else { bar.style.width = "0%"; msg.textContent = "No budget set."; }
+    }
+
+    // --- NEW: Financial Health Calculation ---
+    function calculateFinancialHealth() {
+        let income = 0;
+        let expenses = 0;
+        let totalDebt = 0;
+        let savings = 0;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // 1. Calculate Monthly Income & Expense
+        transactions.forEach(t => {
+            const d = new Date(t.date);
+            if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+                if (t.type === 'income') income += Number(t.amount);
+                if (t.type === 'expense') expenses += Number(t.amount);
+            }
+        });
+
+        // 2. Total Debt
+        debts.forEach(d => {
+            if (d.type === 'borrowed') totalDebt += Number(d.amount);
+        });
+
+        // 3. Total Savings (Goals + Investment txns this month)
+        goals.forEach(g => savings += Number(g.saved)); // Total saved in goals
+
+        // Algorithm
+        // 1. Savings Rate (40% weight): Target 20% of income
+        let savingsScore = 0;
+        if (income > 0) {
+            const savingsRate = (income - expenses) / income;
+            savingsScore = Math.min((savingsRate / 0.20) * 100, 100);
+            if (savingsScore < 0) savingsScore = 0;
+        }
+
+        // 2. Budget Adherence (30% weight): Stay under budget
+        let budgetScore = 100;
+        if (monthlyBudget > 0) {
+            if (expenses > monthlyBudget) budgetScore = Math.max(0, 100 - ((expenses - monthlyBudget) / monthlyBudget * 100));
+        } else {
+            budgetScore = 50; // Neutral if no budget set
+        }
+
+        // 3. Debt Ratio (30% weight): Debt < 30% of income is good
+        let debtScore = 100;
+        if (income > 0) {
+            const debtRatio = totalDebt / (income * 12); // Annualized income check roughly
+            if (debtRatio > 0.3) debtScore = Math.max(0, 100 - ((debtRatio - 0.3) * 100));
+        }
+
+        const totalScore = Math.round((savingsScore * 0.4) + (budgetScore * 0.3) + (debtScore * 0.3));
+
+        // Update UI
+        const circle = document.getElementById('healthCircle');
+        const scoreText = document.getElementById('healthScore');
+        const statusText = document.getElementById('healthStatus');
+        const actionText = document.getElementById('healthAction');
+
+        if (circle && scoreText) {
+            // Animate Circle (Circumference ~ 251.2)
+            const offset = 251.2 - (251.2 * totalScore) / 100;
+            circle.style.strokeDashoffset = offset;
+
+            // Color based on score
+            if (totalScore >= 80) circle.classList.replace('text-emerald-500', 'text-emerald-500') || circle.classList.add('text-emerald-500');
+            else if (totalScore >= 50) { circle.classList.remove('text-emerald-500'); circle.classList.add('text-yellow-500'); }
+            else { circle.classList.remove('text-emerald-500'); circle.classList.add('text-rose-500'); }
+
+            scoreText.textContent = totalScore;
+
+            if (totalScore >= 80) { statusText.textContent = "Excellent"; statusText.className = "font-bold text-emerald-400"; actionText.textContent = "Keep it up!"; }
+            else if (totalScore >= 50) { statusText.textContent = "Good"; statusText.className = "font-bold text-yellow-400"; actionText.textContent = "Try saving more."; }
+            else { statusText.textContent = "Needs Work"; statusText.className = "font-bold text-rose-400"; actionText.textContent = "Reduce expenses."; }
+        }
     }
 
     function calculateInsights() {
@@ -994,6 +1145,7 @@
 
     function updateUI() {
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
+        calculateFinancialHealth(); // Update Health Score
     }
     function renderSummary() {
         let inc = 0, exp = 0, inv = 0;
