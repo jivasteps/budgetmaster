@@ -1521,7 +1521,6 @@
     function updateUI() {
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
         calculateFinancialHealth();
-        renderHeatmap();
         if (isPrivacyMode) document.body.classList.add('privacy-active');
     }
     // Handles Total Balance, Income, Expense, Investment
