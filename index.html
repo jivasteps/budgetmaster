@@ -274,12 +274,25 @@
                             </div>
 
                             <div id="chartLegend" class="w-full mt-6 space-y-2 text-sm"></div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            </div>
+
+
                         </div>
 
                         <div
                             class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                             <h3 class="font-bold text-gray-800 dark:text-white mb-4">Spending Trend (7 Days)</h3>
                             <div class="w-full h-64"><canvas id="trendChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4">Monthly Comparison (Last Month
+                            vs This Month)</h3>
+                        <div class="w-full h-64">
+                            <canvas id="comparisonChart"></canvas>
                         </div>
                     </div>
                     <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">

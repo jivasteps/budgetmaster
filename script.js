@@ -1831,6 +1831,8 @@
         }
     }
     function renderTrendChart() {
+        const chartCanvas = document.getElementById('trendChart');
+        if (!chartCanvas) return; // ✅ Add this line at the top
         const ctx = document.getElementById('trendChart').getContext('2d');
         const isDark = document.documentElement.classList.contains('dark');
         const labels = [], dataPoints = [];
@@ -1849,12 +1851,19 @@
     }
 
     function renderComparisonChart() {
-        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const chartCanvas = document.getElementById('comparisonChart');
+        if (!chartCanvas) return; // ✅ Safety Check: Stop if element is missing
+
+        const ctx = chartCanvas.getContext('2d');
         const isDark = document.documentElement.classList.contains('dark');
+
+        // 1. Calculate Data
         const now = new Date();
         const currentMonth = now.getMonth();
-        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
         const currentYear = now.getFullYear();
+
+        // Handle January lookback (prev month is Dec of prev year)
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
         const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
         const currentMonthTotal = transactions
@@ -1865,6 +1874,7 @@
             .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === lastMonth && new Date(t.date).getFullYear() === lastMonthYear)
             .reduce((sum, t) => sum + Number(t.amount), 0);
 
+        // 2. Render Chart
         if (comparisonChart) comparisonChart.destroy();
 
         comparisonChart = new Chart(ctx, {
@@ -1872,11 +1882,11 @@
             data: {
                 labels: ['Last Month', 'This Month'],
                 datasets: [{
-                    label: 'Spending',
+                    label: 'Total Spending',
                     data: [lastMonthTotal, currentMonthTotal],
                     backgroundColor: ['#94a3b8', '#3b82f6'],
                     borderRadius: 6,
-                    barThickness: 40
+                    barThickness: 50
                 }]
             },
             options: {
