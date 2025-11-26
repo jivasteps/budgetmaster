@@ -1957,31 +1957,69 @@
     }
 
     function showPage(id) {
-        document.querySelectorAll('main > div > div[id^="view-"]').forEach(el => el.classList.add('hidden'));
-        document.getElementById(`view-${id}`).classList.remove('hidden');
-        document.getElementById('pageTitle').textContent = id.charAt(0).toUpperCase() + id.slice(1);
-        document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('bg-blue-600', 'text-white'); el.classList.add('text-slate-400'); });
-        const active = document.getElementById(`nav-${id}`); if (active) { active.classList.remove('text-slate-400'); active.classList.add('bg-blue-600', 'text-white'); }
+        // 1. Hide all views
+        document.querySelectorAll('main > div[id^="view-"]').forEach(el => el.classList.add('hidden'));
 
+        // 2. Show the selected view
+        const targetView = document.getElementById(`view-${id}`);
+        if (targetView) targetView.classList.remove('hidden');
+
+        // 3. Update Title
+        const titleMap = {
+            'dashboard': 'Home',
+            'reports': 'Analytics & Reports', // <--- New Title
+            'transactions': 'Transactions',
+            'family': 'Family & Joint',
+            'shopping': 'Shopping List',
+            'goals': 'Savings Goals',
+            'settings': 'Settings'
+        };
+        document.getElementById('pageTitle').textContent = titleMap[id] || 'ExpenseFlow';
+
+        // 4. Update Navigation Active State
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.remove('bg-blue-600', 'text-white');
+            el.classList.add('text-slate-400');
+        });
+
+        const activeNav = document.getElementById(`nav-${id}`);
+        if (activeNav) {
+            activeNav.classList.remove('text-slate-400');
+            activeNav.classList.add('bg-blue-600', 'text-white');
+        }
+
+        // 5. Handle Action Buttons (Show/Hide top-right buttons)
         const goalsBtn = document.getElementById('addGoalBtn');
         const recBtn = document.getElementById('addRecBtn');
         const txnBtn = document.getElementById('addTxnBtn');
         const debtBtn = document.getElementById('addDebtBtn');
         const familyBtn = document.getElementById('addFamilyBtn');
 
-        goalsBtn.classList.add('hidden');
-        recBtn.classList.add('hidden');
-        txnBtn.classList.add('hidden');
-        debtBtn.classList.add('hidden');
-        familyBtn.classList.add('hidden');
+        // Hide all first
+        [goalsBtn, recBtn, txnBtn, debtBtn, familyBtn].forEach(btn => {
+            if (btn) btn.classList.add('hidden');
+        });
 
+        // Show specific buttons based on page
         if (id === 'goals') goalsBtn.classList.remove('hidden');
         else if (id === 'recurring') recBtn.classList.remove('hidden');
         else if (id === 'debts') debtBtn.classList.remove('hidden');
         else if (id === 'family') familyBtn.classList.remove('hidden');
-        else if (id === 'dashboard' || id === 'transactions' || id === 'calendar') txnBtn.classList.remove('hidden');
+        else if (id === 'dashboard' || id === 'transactions') txnBtn.classList.remove('hidden');
 
-        if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        // 6. Special Case: Render charts if opening Reports
+        if (id === 'reports') {
+            setTimeout(() => {
+                renderChart();
+                renderTrendChart();
+                renderHeatmap(); // If you kept this for desktop
+            }, 100);
+        }
+
+        // 7. Mobile Sidebar Logic
+        if (window.innerWidth < 768 && document.getElementById('sidebar').classList.contains('open')) {
+            toggleSidebar();
+        }
     }
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('mobileOverlay').classList.toggle('active'); }
@@ -2050,6 +2088,55 @@
         else console.warn('Element not found:', id);
     }
 
+    // --- CATEGORY MANAGEMENT LOGIC ---
+
+    function openManageCategoriesModal() {
+        const list = document.getElementById('manageCategoriesList');
+        list.innerHTML = '';
+        const expenseCats = categories['expense'] || [];
+
+        expenseCats.forEach(cat => {
+            list.innerHTML += `
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl group transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm" style="background-color: ${cat.color}">
+                        <i class="fa-solid ${cat.icon}"></i>
+                    </div>
+                    <span class="font-bold text-gray-700 dark:text-gray-200">${cat.name}</span>
+                </div>
+                <div class="flex gap-2">
+                     <button onclick="deleteCategory('${cat.id}')" class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        });
+
+        document.getElementById('manageCategoriesModal').classList.remove('hidden');
+    }
+
+    function closeManageCategoriesModal() {
+        document.getElementById('manageCategoriesModal').classList.add('hidden');
+    }
+
+    async function deleteCategory(id) {
+        if (confirm("Delete this category? Existing transactions will keep their history but show as 'Unknown' category.")) {
+            try {
+                await getDbRef('categories').doc(id).delete();
+                openManageCategoriesModal(); // Refresh list
+                showToast("Category deleted", "success");
+            } catch (e) {
+                showToast("Error deleting category", "error");
+            }
+        }
+    }
+
+    // Don't forget to expose them at the bottom of script.js!
+    window.openManageCategoriesModal = openManageCategoriesModal;
+    window.closeManageCategoriesModal = closeManageCategoriesModal;
+    window.deleteCategory = deleteCategory;
+
     addListener('searchInput', 'input', renderFullList);
     addListener('filterType', 'change', renderFullList);
     addListener('filterDate', 'change', renderFullList);
@@ -2059,5 +2146,7 @@
     addListener('endDate', 'change', renderFullList);
 
     initApp();
+
+
 
 }
