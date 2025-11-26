@@ -1770,7 +1770,6 @@
         const isDark = document.documentElement.classList.contains('dark');
         if (expenseChart) expenseChart.destroy();
         expenseChart = new Chart(ctx, { type: 'doughnut', data: { labels: labels.length ? labels : ['No Data'], datasets: [{ data: data.length ? data : [1], backgroundColor: data.length ? bgColors : [isDark ? '#334155' : '#f1f5f9'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, cutout: '75%', plugins: { legend: { display: false } } } });
-        const legendEl = document.getElementById('chartLegend'); legendEl.innerHTML = '';
         const total = data.reduce((a, b) => a + b, 0);
         Object.keys(catTotals).forEach(catId => {
             const amt = catTotals[catId], pct = total ? ((amt / total) * 100).toFixed(1) : 0;
