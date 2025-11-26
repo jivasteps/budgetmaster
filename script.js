@@ -494,10 +494,10 @@
         }
     }
 
-function toggleTheme() {
-    document.documentElement.classList.toggle('dark');
-    localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-}
+    function toggleTheme() {
+        document.documentElement.classList.toggle('dark');
+        localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
 
     // --- CURRENCY & DATA MGMT ---
     function formatCurrency(num) {
