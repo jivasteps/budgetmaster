@@ -107,7 +107,7 @@
                     <h1 class="text-xl font-bold tracking-tight">ExpenseFlow</h1>
                 </div>
                 <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
-                    <i class="fa-solid fa-xmark"></i>
+                    <i class="fa-solid fa-bars text-xl"></i>
                 </button>
             </div>
 
@@ -537,7 +537,7 @@
                             <input type="text" id="shopItem" placeholder="Add item (e.g., Milk, Eggs)..."
                                 class="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 required>
-                            <div class="relative w-32">
+                            <div class="relative w-full md:w-32">
                                 <span
                                     class="currency-symbol absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
                                 <input type="number" step="0.01" id="shopCost" placeholder="Cost"
@@ -1172,35 +1172,37 @@
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
                             class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-              <form id="familyForm">
-    <div class="form-group">
-        <label for="inviteEmail">Family Member Email</label>
-        <input type="email" id="inviteEmail" name="email" placeholder="spouse@example.com" required>
-    </div>
+                <form id="familyForm">
+                    <div class="form-group">
+                        <label for="inviteEmail">Family Member Email</label>
+                        <input type="email" id="inviteEmail" name="email" placeholder="spouse@example.com" required>
+                    </div>
 
-    <div class="form-group">
-        <label for="role">Role</label>
-        <select name="role" id="role">
-            <option value="JOINT_OWNER">Joint Owner</option>
-            <option value="VIEWER">Viewer (Read Only)</option>
-        </select>
-    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select name="role" id="role">
+                            <option value="JOINT_OWNER">Joint Owner</option>
+                            <option value="VIEWER">Viewer (Read Only)</option>
+                        </select>
+                    </div>
 
-    <button type="submit" id="submitBtn">Generate Invite Link</button>
+                    <button type="submit" id="submitBtn">Generate Invite Link</button>
 
-    <div id="inviteLinkContainer" class="hidden mt-4 p-4 bg-gray-100 dark:bg-slate-700 rounded-xl border border-gray-200 dark:border-slate-600">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Copy and send this link:</p>
-        <div class="flex items-center gap-2">
-            <input type="text" id="generatedLink" readonly 
-                   class="w-full text-sm bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-blue-600 dark:text-blue-400 font-mono focus:outline-none"
-                   onclick="this.select()">
-            <button type="button" onclick="copyInviteLink()" 
-                    class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors" title="Copy to Clipboard">
-                <i class="fa-solid fa-copy"></i>
-            </button>
-        </div>
-    </div>
-</form>
+                    <div id="inviteLinkContainer"
+                        class="hidden mt-4 p-4 bg-gray-100 dark:bg-slate-700 rounded-xl border border-gray-200 dark:border-slate-600">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Copy and send this link:</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="generatedLink" readonly
+                                class="w-full text-sm bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-blue-600 dark:text-blue-400 font-mono focus:outline-none"
+                                onclick="this.select()">
+                            <button type="button" onclick="copyInviteLink()"
+                                class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                title="Copy to Clipboard">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
                 <div class="invite-card" style="margin-top: 20px;">
                     <h3>My Family Account</h3>
 

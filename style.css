@@ -674,3 +674,72 @@ body {
     color: #4ade80;
     border: 1px solid rgba(74, 222, 128, 0.2);
 }
+
+/* =========================================
+   MOBILE RESPONSIVENESS FIXES
+   ========================================= */
+
+@media (max-width: 768px) {
+    
+    /* 1. Fix Shopping List Input (Stack them vertically) */
+    .shopping-input-group {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .shopping-input-group input {
+        width: 100%; /* Full width */
+    }
+
+    /* Fix the 'Cost' wrapper width */
+    .shopping-input-group .relative {
+        width: 100%; 
+    }
+
+    .shopping-input-group button {
+        width: 100%; /* Big button for easy tapping */
+        padding: 12px;
+    }
+
+    /* 2. Fix Toast Notifications (Center them on mobile) */
+    #toast-container {
+        left: 20px;
+        right: 20px;
+        top: 20px;
+        width: auto;
+        align-items: stretch; /* Make toasts full width */
+    }
+
+    .toast {
+        min-width: 0; /* Allow shrinking */
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* 3. Fix "Generate Link" Result Area */
+    #inviteLinkContainer .flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #inviteLinkContainer input {
+        width: 100%;
+        text-overflow: ellipsis;
+    }
+    
+    #inviteLinkContainer button {
+        width: 100%;
+    }
+
+    /* 4. Adjust Modal Padding */
+    .absolute.left-1\/2 {
+        width: 95%; /* 95% width on mobile */
+        padding: 0;
+    }
+    
+    /* 5. Hide heavy charts or tables if needed (Optional) */
+    .heatmap-container {
+        display: none; /* Hide heatmap on very small screens to prevent overflow */
+    }
+}
