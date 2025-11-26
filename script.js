@@ -1,14 +1,14 @@
 {
     // --- PWA INSTALLATION LOGIC ---
-    const manifest = { 
-    "name": "PocketGuard", 
-    "short_name": "PocketGuard", 
-    "start_url": "/", 
-    "display": "standalone", 
-    "background_color": "#ffffff", 
-    "theme_color": "#2563eb", 
-    "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png", "sizes": "512x512", "type": "image/png" }] 
-};
+    const manifest = {
+        "name": "PocketGuard",
+        "short_name": "PocketGuard",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#2563eb",
+        "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png", "sizes": "512x512", "type": "image/png" }]
+    };
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn'); // 1. Get the button
 
@@ -806,7 +806,6 @@
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.setType = setType;
-        window.startVoiceInput = startVoiceInput;
         window.editTransaction = editTransaction;
         window.deleteTransaction = deleteTransaction;
 
@@ -1354,107 +1353,62 @@
     }
 
     // FEATURE 4: Predictive Financial Health
-    function calculateFinancialHealth() {
-        let income = 0;
-        let expenses = 0;
-        let totalDebt = 0;
-        let savings = 0;
 
+    function calculateFinancialHealth() {
+        // 1. Get Data
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
-        transactions.forEach(t => {
-            const d = new Date(t.date);
-            if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-                if (t.type === 'income') income += Number(t.amount);
-                if (t.type === 'expense') expenses += Number(t.amount);
-            }
-        });
+        // Calculate Spending this month
+        const expenses = transactions
+            .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === currentMonth && new Date(t.date).getFullYear() === currentYear)
+            .reduce((sum, t) => sum + Number(t.amount), 0);
 
-        debts.forEach(d => {
-            if (d.type === 'borrowed') totalDebt += Number(d.amount);
-        });
+        // 2. Calculate Percentage of Budget
+        const budget = monthlyBudget || 1; // Avoid divide by zero
+        let percentage = Math.round((expenses / budget) * 100);
 
-        goals.forEach(g => savings += Number(g.saved));
+        // Cap visual at 100% (but keep text accurate)
+        let visualOffset = Math.max(0, 100 - percentage);
 
-        const today = now.getDate();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        const daysRemaining = daysInMonth - today;
-
-        // Calculate Average Daily Spend (ADS)
-        const dailyAverage = today > 0 ? expenses / today : expenses;
-
-        // Forecast
-        const projectedSpend = expenses + (dailyAverage * daysRemaining);
-        const budget = monthlyBudget || 0;
-
-        let predictionMsg = "On track.";
-        let isDanger = false;
-
-        if (budget > 0) {
-            if (projectedSpend > budget) {
-                const overage = projectedSpend - budget;
-                predictionMsg = `⚠️ Forecast: Over by ${formatCurrency(overage)}`;
-                isDanger = true;
-            } else {
-                const buffer = budget - projectedSpend;
-                predictionMsg = `Safe! Est. buffer: ${formatCurrency(buffer)}`;
-            }
-        } else {
-            predictionMsg = "Set a budget to see forecasts.";
-        }
-
-        // SCORING
-        let savingsScore = 0;
-        if (income > 0) {
-            const savingsRate = (income - expenses) / income;
-            savingsScore = Math.min((savingsRate / 0.20) * 100, 100);
-            if (savingsScore < 0) savingsScore = 0;
-        }
-
-        let budgetScore = 100;
-        if (monthlyBudget > 0) {
-            if (expenses > monthlyBudget) budgetScore = Math.max(0, 100 - ((expenses - monthlyBudget) / monthlyBudget * 100));
-        } else {
-            budgetScore = 50;
-        }
-
-        let debtScore = 100;
-        if (income > 0) {
-            const debtRatio = totalDebt / (income * 12);
-            if (debtRatio > 0.3) debtScore = Math.max(0, 100 - ((debtRatio - 0.3) * 100));
-        }
-
-        const totalScore = Math.round((savingsScore * 0.4) + (budgetScore * 0.3) + (debtScore * 0.3));
-
-        // Update UI
+        // 3. Update UI
         const circle = document.getElementById('healthCircle');
         const scoreText = document.getElementById('healthScore');
         const statusText = document.getElementById('healthStatus');
         const actionText = document.getElementById('healthAction');
 
         if (circle && scoreText) {
-            const offset = 251.2 - (251.2 * totalScore) / 100;
-            circle.style.strokeDashoffset = offset;
+            // SVG Circle Math (251.2 is the circumference for r=40)
+            // If r=32 (from your new HTML), circumference is ~200. Let's assume r=32 based on previous step.
+            const circumference = 200;
+            const offset = circumference - (percentage / 100) * circumference;
 
-            if (totalScore >= 80) circle.classList.replace('text-emerald-500', 'text-emerald-500') || circle.classList.add('text-emerald-500');
-            else if (totalScore >= 50) { circle.classList.remove('text-emerald-500'); circle.classList.add('text-yellow-500'); }
-            else { circle.classList.remove('text-emerald-500'); circle.classList.add('text-rose-500'); }
+            // Invert logic: Empty circle fills up as you spend
+            circle.style.strokeDashoffset = Math.max(0, offset); // Fill up
 
-            scoreText.textContent = totalScore;
+            // Colors
+            circle.classList.remove('text-emerald-500', 'text-yellow-500', 'text-rose-500');
+            statusText.classList.remove('text-emerald-400', 'text-yellow-400', 'text-rose-400');
 
-            if (isDanger) {
-                statusText.textContent = "Risk Alert";
-                statusText.className = "font-bold text-rose-400 blink-animation";
-                actionText.innerHTML = predictionMsg;
+            if (percentage < 75) {
+                circle.classList.add('text-emerald-500');
+                statusText.textContent = "Safe Zone";
+                statusText.classList.add('text-emerald-400');
+                actionText.textContent = "You are well within budget.";
+            } else if (percentage < 90) {
+                circle.classList.add('text-yellow-500');
+                statusText.textContent = "Careful";
+                statusText.classList.add('text-yellow-400');
+                actionText.textContent = "Approaching your limit.";
             } else {
-                if (totalScore >= 80) { statusText.textContent = "Excellent"; actionText.textContent = predictionMsg; }
-                else if (totalScore >= 50) { statusText.textContent = "Good"; actionText.textContent = predictionMsg; }
-                else { statusText.textContent = "Needs Work"; actionText.textContent = predictionMsg; }
-
-                statusText.className = `font-bold ${totalScore >= 50 ? 'text-emerald-400' : 'text-yellow-400'}`;
+                circle.classList.add('text-rose-500');
+                statusText.textContent = "Overspending";
+                statusText.classList.add('text-rose-400');
+                actionText.textContent = "Review your expenses.";
             }
+
+            scoreText.textContent = percentage + "%";
         }
     }
 
