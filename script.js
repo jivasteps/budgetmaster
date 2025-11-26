@@ -285,7 +285,7 @@
         document.getElementById('date').valueAsDate = new Date();
 
         // FORCE RESET: Hide all views and show only Dashboard on startup
-        document.querySelectorAll('main > div[id^="view-"]').forEach(el => {
+        document.querySelectorAll('#mainScroll > div[id^="view-"]').forEach(el => {
             el.classList.add('hidden');
         });
 
@@ -1907,7 +1907,9 @@
 
     function showPage(id) {
         // 1. Hide all views safely
-        document.querySelectorAll('main > div[id^="view-"]').forEach(el => el.classList.add('hidden'));
+        // FIXED: Changed selector from 'main > div' to '#mainScroll > div'
+        const views = document.querySelectorAll('#mainScroll > div[id^="view-"]');
+        views.forEach(el => el.classList.add('hidden'));
 
         // 2. Show the selected view safely
         const targetView = document.getElementById(`view-${id}`);
