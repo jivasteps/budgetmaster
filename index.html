@@ -241,81 +241,30 @@
                     </div>
                 </div>
 
-                <div id="view-reports" class="hidden space-y-6 max-w-7xl mx-auto pb-10">
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div
-                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <p class="text-sm text-gray-500 mb-1">Income</p>
-                            <h3 class="text-2xl font-bold text-emerald-600 privacy-sensitive" id="totalIncome">₹0.00
-                            </h3>
+                <div
+                    class="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden mt-6">
+                    <div class="absolute right-0 top-0 p-4 opacity-10"><i
+                            class="fa-solid fa-wand-magic-sparkles text-8xl"></i></div>
+                    <h3 class="text-sm font-medium text-indigo-100 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb"></i> AI Insights
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4 relative z-10">
+                        <div>
+                            <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Top Category</p>
+                            <p class="text-lg font-bold truncate" id="insightTopCat">-</p>
+                            <p class="text-xs text-indigo-200" id="insightTopCatAmount">₹0</p>
                         </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <p class="text-sm text-gray-500 mb-1">Expenses</p>
-                            <h3 class="text-2xl font-bold text-rose-600 privacy-sensitive" id="totalExpense">₹0.00</h3>
+                        <div>
+                            <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Projected Spend</p>
+                            <p class="text-lg font-bold" id="insightProjection">₹0</p>
+                            <p class="text-xs text-indigo-200">End of Month</p>
                         </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <p class="text-sm text-gray-500 mb-1">Investments</p>
-                            <h3 class="text-2xl font-bold text-purple-600 privacy-sensitive" id="totalInvestment">₹0.00
-                            </h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <h3 class="font-bold text-gray-800 dark:text-white mb-4">Expense Breakdown</h3>
-
-                            <div class="relative w-full max-w-[300px] mx-auto">
-                                <canvas id="expenseChart"></canvas>
-                            </div>
-
-                            <div id="chartLegend" class="w-full mt-6 space-y-2 text-sm"></div>
-
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            </div>
-
-
-                        </div>
-
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                            <h3 class="font-bold text-gray-800 dark:text-white mb-4">Spending Trend (7 Days)</h3>
-                            <div class="w-full h-64"><canvas id="trendChart"></canvas></div>
+                        <div>
+                            <p class="text-[10px] text-indigo-200 uppercase tracking-wide">Daily Avg</p>
+                            <p class="text-lg font-bold" id="insightDailyAvg">₹0</p>
+                            <p class="text-xs text-indigo-200">Last 30 Days</p>
                         </div>
                     </div>
-                    <div
-                        class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mt-6">
-                        <h3 class="font-bold text-gray-800 dark:text-white mb-4">Monthly Comparison (Last Month
-                            vs This Month)</h3>
-                        <div class="w-full h-64">
-                            <canvas id="comparisonChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                        <div class="flex justify-between items-center relative z-10">
-                            <div>
-                                <h3 class="text-lg font-bold mb-1">Budget Used</h3>
-                                <p class="text-slate-400 text-sm mb-2" id="healthStatus">Calculating...</p>
-                                <p class="text-xs text-slate-500 max-w-xs" id="healthAction">-</p>
-                            </div>
-                            <div class="relative w-20 h-20 flex items-center justify-center">
-                                <svg class="transform -rotate-90 w-20 h-20">
-                                    <circle cx="40" cy="40" r="32" stroke="#334155" stroke-width="6"
-                                        fill="transparent" />
-                                    <circle id="healthCircle" cx="40" cy="40" r="32" stroke="#10b981" stroke-width="6"
-                                        fill="transparent" stroke-dasharray="200" stroke-dashoffset="200"
-                                        class="transition-all duration-1000" />
-                                </svg>
-                                <span class="absolute text-xl font-bold" id="healthScore">0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="heatmapSection" class="hidden md:block"></div>
                 </div>
 
                 <div id="view-family" class="hidden max-w-7xl mx-auto space-y-8 pb-10">

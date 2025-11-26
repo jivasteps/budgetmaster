@@ -955,10 +955,18 @@
         });
     }
     function renderDebts() {
-        const grid = document.getElementById('debtsGrid'); if (!grid) return;
+        const grid = document.getElementById('debtsGrid');
+        if (!grid) return; // ✅ Safety Check
+
         grid.innerHTML = '';
-        if (debts.length === 0) { document.getElementById('emptyDebts').classList.remove('hidden'); return; }
-        document.getElementById('emptyDebts').classList.add('hidden');
+        if (debts.length === 0) {
+            const empty = document.getElementById('emptyDebts');
+            if (empty) empty.classList.remove('hidden');
+            return;
+        }
+
+        const empty = document.getElementById('emptyDebts');
+        if (empty) empty.classList.add('hidden');
 
         debts.forEach(d => {
             const isLent = d.type === 'lent';
@@ -967,24 +975,24 @@
             const icon = isLent ? 'fa-hand-holding-dollar' : 'fa-hand-holding';
 
             grid.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
-                        <button onclick="deleteDebt('${d.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full ${bg} flex items-center justify-center ${color} text-xl">
-                                <i class="fa-solid ${icon}"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${isLent ? 'You Lent' : 'You Borrowed'}</p>
-                                <h4 class="text-lg font-bold text-gray-800 dark:text-white privacy-sensitive">${d.person}</h4>
-                                <p class="text-sm font-mono font-medium ${color} privacy-sensitive">${formatCurrency(d.amount)}</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex justify-between items-center">
-                            <p class="text-xs text-gray-400">${d.dueDate ? 'Due: ' + formatDate(d.dueDate) : 'No due date'}</p>
-                            <button onclick="settleDebt('${d.id}')" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-100 text-gray-600 dark:text-gray-300 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-colors">Mark Settled</button>
-                        </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
+                <button onclick="deleteDebt('${d.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full ${bg} flex items-center justify-center ${color} text-xl">
+                        <i class="fa-solid ${icon}"></i>
                     </div>
-                `;
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">${isLent ? 'You Lent' : 'You Borrowed'}</p>
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white privacy-sensitive">${d.person}</h4>
+                        <p class="text-sm font-mono font-medium ${color} privacy-sensitive">${formatCurrency(d.amount)}</p>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <p class="text-xs text-gray-400">${d.dueDate ? 'Due: ' + formatDate(d.dueDate) : 'No due date'}</p>
+                    <button onclick="settleDebt('${d.id}')" class="text-xs bg-gray-100 dark:bg-slate-700 hover:bg-blue-100 text-gray-600 dark:text-gray-300 hover:text-blue-600 px-3 py-1.5 rounded-lg transition-colors">Mark Settled</button>
+                </div>
+            </div>
+        `;
         });
     }
     const debtModal = document.getElementById('debtModal');
@@ -1413,22 +1421,35 @@
     }
 
     function calculateInsights() {
+        // SAFETY CHECK: If the HTML element doesn't exist, stop immediately.
+        const topCatEl = document.getElementById('insightTopCat');
+        if (!topCatEl) return;
+
         const now = new Date();
-        const catTotals = {}; let topId = null, topAmt = 0;
+        const catTotals = {};
+        let topId = null, topAmt = 0;
+
+        // 1. Top Category Logic
         transactions.filter(t => t.type === 'expense').forEach(t => {
-            if (!catTotals[t.category]) catTotals[t.category] = 0; catTotals[t.category] += Number(t.amount);
+            if (!catTotals[t.category]) catTotals[t.category] = 0;
+            catTotals[t.category] += Number(t.amount);
             if (catTotals[t.category] > topAmt) { topAmt = catTotals[t.category]; topId = t.category; }
         });
-        document.getElementById('insightTopCat').textContent = topId ? (categoryMap[topId]?.name || 'Unknown') : '-';
+
+        // 2. Update UI
+        topCatEl.textContent = topId ? (categoryMap[topId]?.name || 'Unknown') : '-';
         document.getElementById('insightTopCatAmount').textContent = formatCurrency(topAmt);
 
+        // 3. Projections
         const spent = transactions.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear()).reduce((a, b) => a + Number(b.amount), 0);
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         const proj = now.getDate() > 0 ? (spent / now.getDate()) * daysInMonth : 0;
+
         document.getElementById('insightProjection').textContent = formatCurrency(proj);
 
         const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
         const recentSpent = transactions.filter(t => t.type === 'expense' && new Date(t.date) >= cutoff).reduce((a, b) => a + Number(b.amount), 0);
+
         document.getElementById('insightDailyAvg').textContent = formatCurrency(recentSpent / 30);
     }
 
@@ -2311,7 +2332,5 @@
     addListener('endDate', 'change', renderFullList);
 
     initApp();
-
-
 
 }
