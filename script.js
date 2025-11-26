@@ -2253,29 +2253,6 @@
         document.getElementById('manageWalletsModal').classList.add('hidden');
     };
 
-    // Handle Add Wallet Submit
-    document.getElementById('addWalletForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nameInput = document.getElementById('newWalletName');
-        const name = nameInput.value.trim();
-        if (!name) return;
-
-        try {
-            await getDbRef('wallets').add({
-                name: name,
-                type: 'personal', // Distinguish from 'joint'
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            nameInput.value = ''; // Clear input
-            showToast("Wallet added", "success");
-            // No need to reload list manually, the real-time listener will do it if we hooked it up right? 
-            // Actually, the listener updates 'wallets' array, but we need to re-render the modal list.
-            setTimeout(openManageWalletsModal, 500);
-        } catch (e) {
-            showToast("Error adding wallet", "error");
-        }
-    });
-
     // Don't forget to expose them at the bottom of script.js!
     window.openManageCategoriesModal = openManageCategoriesModal;
     window.closeManageCategoriesModal = closeManageCategoriesModal;
