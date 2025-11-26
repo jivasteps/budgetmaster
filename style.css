@@ -48,35 +48,39 @@ body {
     }
 }
 
-/* Mobile Sidebar */
 @media (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+
     .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
         position: fixed;
+        z-index: 50;
         height: 100vh;
-        top: 0;
-        left: 0;
+        width: 280px;
     }
 
     .sidebar.open {
         transform: translateX(0);
     }
-}
 
-/* Mobile Overlay */
-.overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 35;
-}
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+    }
 
-.overlay.active {
-    display: block;
+    .overlay.active {
+        display: block;
+    }
 }
-
 
 .fade-in {
     animation: fadeIn 0.5s ease-in;
@@ -104,19 +108,17 @@ body {
     min-height: 80px;
 }
 
-
-/* Pin Dots */
+/* Pin Pad Styles */
 .pin-dot {
     width: 16px;
     height: 16px;
     border-radius: 50%;
     border: 2px solid #cbd5e1;
-    background: transparent;
     transition: all 0.2s;
 }
 
 .pin-dot.filled {
-    background: #3b82f6;
+    background-color: #3b82f6;
     border-color: #3b82f6;
 }
 
@@ -133,56 +135,65 @@ body {
     /* Allows clicking through the container area */
 }
 
-/* Toast Notifications */
-#toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
 .toast {
-    padding: 12px 16px;
-    border-radius: 8px;
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 400px;
+    padding: 16px;
+    border-radius: 12px;
     background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 10px;
-    animation: slideIn 0.3s ease;
+    gap: 12px;
+    animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     border-left: 4px solid #3b82f6;
+    overflow: hidden;
+    position: relative;
+}
+
+.dark .toast {
+    background: #1e293b;
+    color: #f1f5f9;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .toast.success {
-    border-color: #10b981;
+    border-left-color: #10b981;
 }
 
 .toast.error {
-    border-color: #f43f5e;
+    border-left-color: #f43f5e;
+}
+
+.toast.info {
+    border-left-color: #3b82f6;
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+}
+
+.toast.success .toast-icon {
+    color: #10b981;
+}
+
+.toast.error .toast-icon {
+    color: #f43f5e;
+}
+
+.toast.info .toast-icon {
+    color: #3b82f6;
+}
+
+.toast-content {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .toast.hiding {
-    animation: fadeOut 0.3s forwards;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-    }
-
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
+    animation: toastFadeOut 0.3s ease-in forwards;
 }
 
 @keyframes toastSlideIn {
@@ -246,45 +257,71 @@ body {
     user-select: none;
 }
 
-/* Heatmap Grid */
+/* Feature 8: Heatmap */
 .heatmap-container {
     overflow-x: auto;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
 }
 
 .heatmap-grid {
     display: grid;
     grid-template-rows: repeat(7, 1fr);
     grid-auto-flow: column;
-    gap: 3px;
+    gap: 4px;
+    width: max-content;
 }
 
 .heatmap-cell {
     width: 12px;
     height: 12px;
     border-radius: 2px;
-    background: #e2e8f0;
+    transition: all 0.2s;
 }
 
-.dark .heatmap-cell {
-    background: #334155;
+.heatmap-cell:hover {
+    transform: scale(1.3);
+    border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.heatmap-cell.heat-1 {
-    background: #bbf7d0;
+.heat-0 {
+    background-color: #e2e8f0;
 }
 
-/* Light Green */
-.heatmap-cell.heat-2 {
-    background: #4ade80;
+.dark .heat-0 {
+    background-color: #1e293b;
 }
 
-/* Medium Green */
-.heatmap-cell.heat-3 {
-    background: #16a34a;
+.heat-1 {
+    background-color: #bbf7d0;
 }
 
-/* Dark Green */
+.dark .heat-1 {
+    background-color: #064e3b;
+}
+
+.heat-2 {
+    background-color: #4ade80;
+}
+
+.dark .heat-2 {
+    background-color: #065f46;
+}
+
+.heat-3 {
+    background-color: #22c55e;
+}
+
+.dark .heat-3 {
+    background-color: #047857;
+}
+
+.heat-4 {
+    background-color: #15803d;
+}
+
+.dark .heat-4 {
+    background-color: #059669;
+}
 
 /* --- 1. Family Invite Card Styling --- */
 .invite-card {
