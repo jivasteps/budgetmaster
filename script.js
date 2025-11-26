@@ -2105,7 +2105,10 @@
                     <span class="font-bold text-gray-700 dark:text-gray-200">${cat.name}</span>
                 </div>
                 <div class="flex gap-2">
-                     <button onclick="deleteCategory('${cat.id}')" class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
+                    <button onclick="editCategory('${cat.id}')" class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button onclick="deleteCategory('${cat.id}')" class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -2131,6 +2134,133 @@
             }
         }
     }
+
+    // Open Modal in Edit Mode
+    window.editCategory = function (id) {
+        const cat = categoryMap[id];
+        if (!cat) return;
+
+        // 1. Populate the form
+        document.getElementById('catId').value = cat.id; // Store ID
+        document.getElementById('catName').value = cat.name;
+        document.getElementById('catColor').value = cat.color;
+        document.getElementById('catIcon').value = cat.icon;
+        document.getElementById('catBudget').value = cat.budget || '';
+
+        // 2. Hide Manage Modal, Open Category Modal
+        closeManageCategoriesModal();
+        document.getElementById('categoryModal').classList.remove('hidden');
+    };
+
+    // Update the Category Form Listener
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+
+        const catId = document.getElementById('catId').value; // Get ID (if editing)
+
+        const categoryData = {
+            name: document.getElementById('catName').value,
+            type: 'expense', // Defaulting to expense for simplicity
+            color: document.getElementById('catColor').value,
+            icon: document.getElementById('catIcon').value || 'fa-tag',
+            budget: parseFloat(document.getElementById('catBudget').value) || 0,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            const ref = getDbRef('categories');
+
+            if (catId) {
+                // EDIT MODE
+                await ref.doc(catId).set(categoryData, { merge: true });
+                showToast("Category updated", "success");
+            } else {
+                // CREATE MODE
+                categoryData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await ref.add(categoryData);
+                showToast("Category created", "success");
+            }
+
+            closeCategoryModal();
+            // Re-open manager if we were editing
+            if (catId) openManageCategoriesModal();
+
+        } catch (err) {
+            console.error(err);
+            showToast("Error saving category", "error");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // --- WALLET MANAGEMENT LOGIC ---
+
+    window.openManageWalletsModal = function () {
+        const list = document.getElementById('manageWalletsList');
+        list.innerHTML = '';
+
+        // Filter out Joint accounts from this list (they are managed in Family view)
+        const personalWallets = wallets.filter(w => w.type !== 'joint');
+
+        personalWallets.forEach(w => {
+            // Calculate balance for this wallet
+            const balance = transactions
+                .filter(t => t.walletId === w.id)
+                .reduce((sum, t) => {
+                    if (t.type === 'income') return sum + t.amount;
+                    if (t.type === 'expense' || t.type === 'investment') return sum - t.amount;
+                    return sum;
+                }, 0);
+
+            list.innerHTML += `
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl group transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800 dark:text-white">${w.name}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 privacy-sensitive">${formatCurrency(balance)}</p>
+                    </div>
+                </div>
+                <button onclick="deleteWallet('${w.id}')" class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title="Delete">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        });
+
+        document.getElementById('manageWalletsModal').classList.remove('hidden');
+    };
+
+    window.closeManageWalletsModal = function () {
+        document.getElementById('manageWalletsModal').classList.add('hidden');
+    };
+
+    // Handle Add Wallet Submit
+    document.getElementById('addWalletForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('newWalletName');
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        try {
+            await getDbRef('wallets').add({
+                name: name,
+                type: 'personal', // Distinguish from 'joint'
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            nameInput.value = ''; // Clear input
+            showToast("Wallet added", "success");
+            // No need to reload list manually, the real-time listener will do it if we hooked it up right? 
+            // Actually, the listener updates 'wallets' array, but we need to re-render the modal list.
+            setTimeout(openManageWalletsModal, 500);
+        } catch (e) {
+            showToast("Error adding wallet", "error");
+        }
+    });
 
     // Don't forget to expose them at the bottom of script.js!
     window.openManageCategoriesModal = openManageCategoriesModal;
