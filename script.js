@@ -22,12 +22,14 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     let currentUser = null;
+    let currentHouseholdId = null; // FEATURE 3: Global Household ID
+
     let transactions = [];
     let goals = [];
     let debts = [];
     let recurringItems = [];
     let shoppingItems = [];
-    let familyMembers = []; // New
+    let familyMembers = []; 
     let wallets = [];
     let categories = { expense: [], income: [], investment: [] };
     let categoryMap = {};
@@ -39,7 +41,7 @@
     let currentCalendarDate = new Date();
     let userPin = null;
     let pinInput = "";
-    let currentCurrency = 'INR'; // Default
+    let currentCurrency = 'INR'; 
 
     const defaultCategoriesList = [
         { id: 'food', type: 'expense', name: 'Food & Dining', icon: 'fa-utensils', color: '#f87171' },
@@ -67,6 +69,15 @@
         { id: 'card', name: 'Credit Card' }
     ];
 
+    // FEATURE 3: DB Reference Helper
+    function getDbRef(collectionName) {
+        if (!currentHouseholdId) {
+            console.error("No household ID found!");
+            return null;
+        }
+        return db.collection('artifacts').doc(appId).collection('households').doc(currentHouseholdId).collection(collectionName);
+    }
+
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider).catch((error) => {
@@ -77,7 +88,6 @@
     }
     function logout() { auth.signOut().then(() => window.location.reload()); }
 
-    // --- NEW: TOAST NOTIFICATIONS ---
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -93,15 +103,12 @@
         `;
 
         container.appendChild(toast);
-
-        // Auto remove
         setTimeout(() => {
             toast.classList.add('hiding');
             toast.addEventListener('animationend', () => toast.remove());
         }, 4000);
     }
 
-    // --- NEW: VOICE INPUT ---
     function startVoiceInput(inputId) {
         if (!('webkitSpeechRecognition' in window)) {
             showToast("Voice input not supported in this browser", "error");
@@ -142,7 +149,8 @@
             document.getElementById('themeToggleDot').style.transform = 'translateX(0)';
         }
 
-        auth.onAuthStateChanged((user) => {
+        // FEATURE 3: Updated Auth Logic for Households
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('userName').textContent = user.displayName || 'User';
@@ -151,7 +159,7 @@
                 document.getElementById('view-landing').classList.add('hidden');
                 document.getElementById('app-layout').classList.remove('hidden');
 
-                // Check Security & Settings
+                // Check Security (PIN remains PERSONAL)
                 db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('security')
                     .onSnapshot(doc => {
                         if (doc.exists) {
@@ -164,8 +172,32 @@
                         }
                     });
 
-                // Load Currency Setting
-                db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('settings').doc('general')
+                // HOUSEHOLD LOGIC
+                const userRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid);
+                const userDoc = await userRef.get();
+
+                if (userDoc.exists && userDoc.data().householdId) {
+                    currentHouseholdId = userDoc.data().householdId;
+                    showToast("Synced with Household", "success");
+                } else {
+                    currentHouseholdId = user.uid; // Default to own UID
+                    await userRef.set({ 
+                        email: user.email,
+                        householdId: currentHouseholdId,
+                        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    
+                    // Initialize household
+                    await db.collection('artifacts').doc(appId).collection('households').doc(currentHouseholdId).set({
+                        owner: user.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    
+                    showToast("New Household Created", "success");
+                }
+
+                // Load Currency (SHARED)
+                getDbRef('settings').doc('general')
                     .onSnapshot(doc => {
                         if (doc.exists && doc.data().currency) {
                             currentCurrency = doc.data().currency;
@@ -181,7 +213,7 @@
                 setupRecurringListener();
                 setupDebtsListener();
                 setupShoppingListener();
-                setupFamilyListener(); // New
+                setupFamilyListener(); 
                 loadBudget();
             } else {
                 document.getElementById('view-landing').classList.remove('hidden');
@@ -195,7 +227,7 @@
         document.getElementById('date').valueAsDate = new Date();
     }
 
-    // --- PIN LOCK LOGIC ---
+    // --- PIN LOCK LOGIC (Remains Personal) ---
     function enterPin(num) {
         if (pinInput.length < 4) {
             pinInput += num;
@@ -236,12 +268,12 @@
             dot.parentElement.classList.add('bg-blue-600');
             dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700');
         } else {
-            // Disable PIN
             if (confirm("Disable App Lock?")) {
                 db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('security').set({ pin: null });
                 area.classList.add('hidden');
                 dot.classList.remove('translate-x-5');
                 dot.parentElement.classList.remove('bg-blue-600');
+                dot.parentElement.classList.remove('bg-gray-200', 'dark:bg-slate-700'); // Clean up classes
                 dot.parentElement.classList.add('bg-gray-200', 'dark:bg-slate-700');
                 userPin = null;
             }
@@ -289,10 +321,10 @@
     async function saveCurrency() {
         const val = document.getElementById('currencySelect').value;
         currentCurrency = val;
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('general').set({ currency: val }, { merge: true });
+        // Shared Currency Setting
+        await getDbRef('settings').doc('general').set({ currency: val }, { merge: true });
         updateUI();
 
-        // Update Symbols in Modals
         document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥' }[val]);
     }
 
@@ -305,7 +337,7 @@
             debts: debts,
             recurring: recurringItems,
             shopping: shoppingItems,
-            family: familyMembers // New
+            family: familyMembers 
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -325,8 +357,12 @@
                         if (!items) return;
                         const batch = db.batch();
                         let count = 0;
+                        // Use getDbRef to import into shared household
+                        const collRef = getDbRef(collName);
+                        if (!collRef) return;
+
                         for (const item of items) {
-                            const docRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection(collName).doc(item.id || db.collection('temp').doc().id);
+                            const docRef = collRef.doc(item.id || db.collection('temp').doc().id);
                             const { id, ...docData } = item;
                             batch.set(docRef, docData, { merge: true });
                             count++;
@@ -356,13 +392,15 @@
 
     // --- WALLETS ---
     function setupWalletsListener() {
-        const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('wallets');
+        const ref = getDbRef('wallets');
+        if(!ref) return;
+
         ref.onSnapshot(async (snap) => {
             if (snap.empty) { await seedDefaultWallets(ref); return; }
             wallets = []; walletMap = {};
             snap.forEach(doc => { const d = { id: doc.id, ...doc.data() }; wallets.push(d); walletMap[d.id] = d; });
             updateWalletOptions();
-            renderJointAccounts(); // Re-render joint view
+            renderJointAccounts(); 
         });
     }
     async function seedDefaultWallets(ref) {
@@ -381,8 +419,10 @@
 
     // --- FAMILY & JOINT ---
     function setupFamilyListener() {
-        db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('family')
-            .onSnapshot(snap => {
+        const ref = getDbRef('family');
+        if(!ref) return;
+        
+        ref.onSnapshot(snap => {
                 familyMembers = [];
                 snap.forEach(doc => familyMembers.push({ id: doc.id, ...doc.data() }));
                 renderFamilyMembers();
@@ -433,7 +473,6 @@
         document.getElementById('emptyJoint').classList.add('hidden');
 
         jointWallets.forEach(w => {
-            // Calculate balance for this wallet
             const balance = transactions.filter(t => t.walletId === w.id).reduce((sum, t) => {
                 if (t.type === 'income') return sum + t.amount;
                 if (t.type === 'expense' || t.type === 'investment') return sum - t.amount;
@@ -461,7 +500,6 @@
         });
     }
 
-    // Family Modals & Actions
     const familyModal = document.getElementById('familyModal');
     function openFamilyModal() { document.getElementById('familyForm').reset(); familyModal.classList.remove('hidden'); }
     function closeFamilyModal() { familyModal.classList.add('hidden'); }
@@ -475,7 +513,7 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('family').add(data);
+            await getDbRef('family').add(data);
             closeFamilyModal();
             showToast("Member added", "success");
         } catch (err) { showToast("Error adding member", "error"); }
@@ -483,7 +521,7 @@
 
     window.deleteFamilyMember = async (id) => {
         if (confirm("Remove this family member?")) {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('family').doc(id).delete();
+            await getDbRef('family').doc(id).delete();
             showToast("Member removed", "info");
         }
     };
@@ -491,7 +529,7 @@
     window.createJointAccount = async () => {
         const name = prompt("Enter Name for Joint Account (e.g., Family Savings):");
         if (name) {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('wallets').add({
+            await getDbRef('wallets').add({
                 name: name,
                 type: 'joint'
             });
@@ -501,14 +539,16 @@
 
     window.deleteWallet = async (id) => {
         if (confirm("Delete this wallet? Transactions linked to it will remain but wallet reference will be lost.")) {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('wallets').doc(id).delete();
+            await getDbRef('wallets').doc(id).delete();
         }
     };
 
 
-    // --- CATEGORIES (Modified for Budgets) ---
+    // --- CATEGORIES ---
     function setupCategoriesListener() {
-        const catsRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories');
+        const catsRef = getDbRef('categories');
+        if(!catsRef) return;
+
         catsRef.onSnapshot(async (snapshot) => {
             if (snapshot.empty) { await seedDefaultCategories(catsRef); return; }
             categories = { expense: [], income: [], investment: [] }; categoryMap = {};
@@ -560,7 +600,7 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('categories').add(newCat);
+            await getDbRef('categories').add(newCat);
             closeCategoryModal();
             showToast("Category saved", "success");
         } catch (err) { showToast("Error saving category", "error"); }
@@ -568,12 +608,14 @@
 
     // --- DEBTS ---
     function setupDebtsListener() {
-        db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts')
-            .onSnapshot(snap => {
+        const ref = getDbRef('debts');
+        if(!ref) return;
+
+        ref.onSnapshot(snap => {
                 debts = [];
                 snap.forEach(doc => debts.push({ id: doc.id, ...doc.data() }));
                 renderDebts();
-                calculateNetWorth(); // Update net worth when debts change
+                calculateNetWorth(); 
             });
     }
     function renderDebts() {
@@ -635,18 +677,20 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').add(data);
+            await getDbRef('debts').add(data);
             closeDebtModal();
             showToast("Debt record added", "success");
         } catch (e) { showToast("Error adding debt", "error"); }
     });
-    window.deleteDebt = async (id) => { if (confirm("Delete record?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
-    window.settleDebt = async (id) => { if (confirm("Mark as settled?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('debts').doc(id).delete(); };
+    window.deleteDebt = async (id) => { if (confirm("Delete record?")) await getDbRef('debts').doc(id).delete(); };
+    window.settleDebt = async (id) => { if (confirm("Mark as settled?")) await getDbRef('debts').doc(id).delete(); };
 
-    // --- SHOPPING (NEW) ---
+    // --- SHOPPING ---
     function setupShoppingListener() {
-        db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping')
-            .onSnapshot(snap => {
+        const ref = getDbRef('shopping');
+        if(!ref) return;
+
+        ref.onSnapshot(snap => {
                 shoppingItems = [];
                 snap.forEach(doc => shoppingItems.push({ id: doc.id, ...doc.data() }));
                 renderShoppingList();
@@ -699,7 +743,7 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').add(data);
+            await getDbRef('shopping').add(data);
             document.getElementById('shopItem').value = '';
             document.getElementById('shopCost').value = '';
             showToast("Item added to list", "success");
@@ -707,11 +751,11 @@
     });
 
     window.toggleShoppingItem = async (id, checked) => {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').doc(id).update({ checked });
+        await getDbRef('shopping').doc(id).update({ checked });
     };
 
     window.deleteShoppingItem = async (id) => {
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('shopping').doc(id).delete();
+        await getDbRef('shopping').doc(id).delete();
     };
 
     window.checkoutShoppingList = async () => {
@@ -734,8 +778,10 @@
 
     // --- RECURRING ---
     function setupRecurringListener() {
-        db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring')
-            .onSnapshot(snap => {
+        const ref = getDbRef('recurring');
+        if(!ref) return;
+
+        ref.onSnapshot(snap => {
                 recurringItems = [];
                 snap.forEach(doc => recurringItems.push({ id: doc.id, ...doc.data() }));
                 renderRecurring();
@@ -751,9 +797,8 @@
 
         recurringItems.forEach(item => {
             const cat = categoryMap[item.category] || { name: 'Unknown', icon: 'fa-rotate', color: '#ccc' };
-            const isDue = item.day <= today; // Simplistic check
-            const statusColor = isDue ? 'text-rose-500' : 'text-emerald-500';
-
+            const isDue = item.day <= today; 
+            
             grid.innerHTML += `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative">
                         <button onclick="deleteRecurring('${item.id}')" class="absolute top-3 right-3 text-gray-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
@@ -795,18 +840,17 @@
             category: document.getElementById('recCategory').value
         };
         try {
-            await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').add(data);
+            await getDbRef('recurring').add(data);
             closeRecurringModal();
             showToast("Subscription added", "success");
         } catch (e) { showToast("Error adding subscription", "error"); }
     });
 
-    window.deleteRecurring = async (id) => { if (confirm("Delete?")) await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('recurring').doc(id).delete(); };
+    window.deleteRecurring = async (id) => { if (confirm("Delete?")) await getDbRef('recurring').doc(id).delete(); };
 
     window.payRecurring = (id) => {
         const item = recurringItems.find(i => i.id === id);
         if (!item) return;
-        // Pre-fill transaction modal
         openModal();
         setType('expense');
         document.getElementById('amount').value = item.amount;
@@ -831,14 +875,10 @@
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        // Empty slots
         for (let i = 0; i < firstDay; i++) { grid.innerHTML += `<div></div>`; }
 
-        // Days
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-            // Aggregate spending for this day
             const dayTxns = transactions.filter(t => t.date === dateStr && t.type === 'expense');
             const total = dayTxns.reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -866,14 +906,16 @@
     }
 
     function setupRealtimeListener() {
-        const collectionRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses');
+        const collectionRef = getDbRef('expenses');
+        if (!collectionRef) return;
+
         collectionRef.onSnapshot((snapshot) => {
             transactions = [];
             snapshot.forEach(doc => transactions.push({ id: doc.id, ...doc.data() }));
             transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
             updateTagFilter();
             updateUI();
-            renderJointAccounts(); // Update joint balances
+            renderJointAccounts(); 
         });
     }
 
@@ -886,7 +928,7 @@
         });
 
         const select = document.getElementById('filterTag');
-        if (!select) return; // Ensure filterTag exists
+        if (!select) return; 
         const current = select.value;
         select.innerHTML = '<option value="all">All Tags</option>';
 
@@ -901,17 +943,19 @@
     }
 
     function setupGoalsListener() {
-        const goalsRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('goals');
+        const goalsRef = getDbRef('goals');
+        if(!goalsRef) return;
+
         goalsRef.onSnapshot((snapshot) => {
             goals = [];
             snapshot.forEach(doc => goals.push({ id: doc.id, ...doc.data() }));
             renderGoals();
-            calculateNetWorth(); // Update net worth when goals change
+            calculateNetWorth(); 
         });
     }
 
     function loadBudget() {
-        db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('general')
+        getDbRef('settings').doc('general')
             .onSnapshot(doc => { if (doc.exists) { monthlyBudget = doc.data().monthlyBudget || 0; } updateBudgetUI(); });
     }
     function openBudgetModal() { document.getElementById('budgetInput').value = monthlyBudget || ''; document.getElementById('budgetModal').classList.remove('hidden'); }
@@ -919,7 +963,7 @@
     async function saveBudget() {
         const val = parseFloat(document.getElementById('budgetInput').value);
         if (isNaN(val) || val < 0) return showToast("Invalid budget", "error");
-        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('settings').doc('general').set({ monthlyBudget: val }, { merge: true });
+        await getDbRef('settings').doc('general').set({ monthlyBudget: val }, { merge: true });
         closeBudgetModal();
         showToast("Budget updated", "success");
     }
@@ -938,7 +982,7 @@
         } else { bar.style.width = "0%"; msg.textContent = "No budget set."; }
     }
 
-    // --- NEW: Financial Health Calculation ---
+    // FEATURE 4: Predictive Financial Health
     function calculateFinancialHealth() {
         let income = 0;
         let expenses = 0;
@@ -949,7 +993,6 @@
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
-        // 1. Calculate Monthly Income & Expense
         transactions.forEach(t => {
             const d = new Date(t.date);
             if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
@@ -958,16 +1001,42 @@
             }
         });
 
-        // 2. Total Debt
         debts.forEach(d => {
             if (d.type === 'borrowed') totalDebt += Number(d.amount);
         });
 
-        // 3. Total Savings (Goals + Investment txns this month)
-        goals.forEach(g => savings += Number(g.saved)); // Total saved in goals
+        goals.forEach(g => savings += Number(g.saved)); 
 
-        // Algorithm
-        // 1. Savings Rate (40% weight): Target 20% of income
+        // --- FEATURE 4 LOGIC START ---
+        const today = now.getDate();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const daysRemaining = daysInMonth - today;
+        
+        // Calculate Average Daily Spend (ADS)
+        const dailyAverage = today > 0 ? expenses / today : expenses;
+        
+        // Forecast: Current Spent + (Average * Days Left)
+        const projectedSpend = expenses + (dailyAverage * daysRemaining);
+        const budget = monthlyBudget || 0;
+        
+        let predictionMsg = "On track.";
+        let isDanger = false;
+
+        if (budget > 0) {
+            if (projectedSpend > budget) {
+                const overage = projectedSpend - budget;
+                predictionMsg = `⚠️ Forecast: Over by ${formatCurrency(overage)}`;
+                isDanger = true;
+            } else {
+                const buffer = budget - projectedSpend;
+                predictionMsg = `Safe! Est. buffer: ${formatCurrency(buffer)}`;
+            }
+        } else {
+            predictionMsg = "Set a budget to see forecasts.";
+        }
+        // --- FEATURE 4 LOGIC END ---
+
+        // SCORING
         let savingsScore = 0;
         if (income > 0) {
             const savingsRate = (income - expenses) / income;
@@ -975,18 +1044,16 @@
             if (savingsScore < 0) savingsScore = 0;
         }
 
-        // 2. Budget Adherence (30% weight): Stay under budget
         let budgetScore = 100;
         if (monthlyBudget > 0) {
             if (expenses > monthlyBudget) budgetScore = Math.max(0, 100 - ((expenses - monthlyBudget) / monthlyBudget * 100));
         } else {
-            budgetScore = 50; // Neutral if no budget set
+            budgetScore = 50; 
         }
 
-        // 3. Debt Ratio (30% weight): Debt < 30% of income is good
         let debtScore = 100;
         if (income > 0) {
-            const debtRatio = totalDebt / (income * 12); // Annualized income check roughly
+            const debtRatio = totalDebt / (income * 12); 
             if (debtRatio > 0.3) debtScore = Math.max(0, 100 - ((debtRatio - 0.3) * 100));
         }
 
@@ -999,20 +1066,26 @@
         const actionText = document.getElementById('healthAction');
 
         if (circle && scoreText) {
-            // Animate Circle (Circumference ~ 251.2)
             const offset = 251.2 - (251.2 * totalScore) / 100;
             circle.style.strokeDashoffset = offset;
 
-            // Color based on score
             if (totalScore >= 80) circle.classList.replace('text-emerald-500', 'text-emerald-500') || circle.classList.add('text-emerald-500');
             else if (totalScore >= 50) { circle.classList.remove('text-emerald-500'); circle.classList.add('text-yellow-500'); }
             else { circle.classList.remove('text-emerald-500'); circle.classList.add('text-rose-500'); }
 
             scoreText.textContent = totalScore;
 
-            if (totalScore >= 80) { statusText.textContent = "Excellent"; statusText.className = "font-bold text-emerald-400"; actionText.textContent = "Keep it up!"; }
-            else if (totalScore >= 50) { statusText.textContent = "Good"; statusText.className = "font-bold text-yellow-400"; actionText.textContent = "Try saving more."; }
-            else { statusText.textContent = "Needs Work"; statusText.className = "font-bold text-rose-400"; actionText.textContent = "Reduce expenses."; }
+            if (isDanger) {
+                statusText.textContent = "Risk Alert";
+                statusText.className = "font-bold text-rose-400 blink-animation"; 
+                actionText.innerHTML = predictionMsg; 
+            } else {
+                if (totalScore >= 80) { statusText.textContent = "Excellent"; actionText.textContent = predictionMsg; }
+                else if (totalScore >= 50) { statusText.textContent = "Good"; actionText.textContent = predictionMsg; }
+                else { statusText.textContent = "Needs Work"; actionText.textContent = predictionMsg; }
+                
+                statusText.className = `font-bold ${totalScore >= 50 ? 'text-emerald-400' : 'text-yellow-400'}`;
+            }
         }
     }
 
@@ -1043,27 +1116,23 @@
         let savings = 0;
         let debt = 0;
 
-        // 1. Cash Balance & Investments from transactions
         transactions.forEach(t => {
             const amt = Number(t.amount);
             if (t.type === 'income') cash += amt;
             else if (t.type === 'expense') cash -= amt;
             else if (t.type === 'investment') {
-                cash -= amt;     // Money leaves cash wallet
-                invested += amt; // But is added to investment asset
+                cash -= amt;    
+                invested += amt; 
             }
         });
 
-        // 2. Savings from Goals
         goals.forEach(g => savings += Number(g.saved));
 
-        // 3. Debts
         debts.forEach(d => {
             if (d.type === 'borrowed') debt += Number(d.amount);
-            // Note: 'lent' could be treated as asset, but for simplicity we track 'borrowed' as liability
         });
 
-        const assets = cash + invested + savings; // + lent (if added)
+        const assets = cash + invested + savings;
         const netWorth = assets - debt;
 
         document.getElementById('nwTotal').textContent = formatCurrency(netWorth);
@@ -1131,7 +1200,6 @@
         document.getElementById('splitPerPerson').textContent = formatCurrency(share);
         document.getElementById('splitResult').classList.remove('hidden');
 
-        // Store for logging
         window.currentShare = share;
     }
 
@@ -1145,7 +1213,7 @@
 
     function updateUI() {
         renderSummary(); renderRecentList(); renderFullList(); renderChart(); renderTrendChart(); renderComparisonChart(); updateBudgetUI(); calculateInsights(); renderCalendar(); renderCategoryBudgets(); calculateNetWorth(); renderJointAccounts();
-        calculateFinancialHealth(); // Update Health Score
+        calculateFinancialHealth(); 
     }
     function renderSummary() {
         let inc = 0, exp = 0, inv = 0;
@@ -1168,7 +1236,6 @@
         const tagFilter = document.getElementById('filterTag').value;
         const search = document.getElementById('searchInput').value.toLowerCase();
 
-        // Date Range Logic
         let start = null, end = null;
         if (dateFilter === 'custom') {
             const s = document.getElementById('startDate').value;
@@ -1254,14 +1321,14 @@
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
-            const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('goals');
+            const ref = getDbRef('goals');
             if (id) await ref.doc(id).update(data); else await ref.add(data);
             closeGoalModal();
         } catch (err) { alert("Error saving goal"); }
     });
     window.deleteGoal = async (id) => {
         if (!confirm("Delete this goal?")) return;
-        try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('goals').doc(id).delete(); } catch (e) { alert("Error"); }
+        try { await getDbRef('goals').doc(id).delete(); } catch (e) { alert("Error"); }
     }
 
     function renderChart() {
@@ -1299,7 +1366,6 @@
         });
     }
 
-    // Comparison Chart Logic
     function renderComparisonChart() {
         const ctx = document.getElementById('comparisonChart').getContext('2d');
         const isDark = document.documentElement.classList.contains('dark');
@@ -1372,7 +1438,6 @@
         }
 
         const dateDisplay = formatDate(t.date);
-        // Extract tags for display
         const noteText = t.note || 'No note';
         const noteDisplay = noteText.replace(/(#\w+)/g, '<span class="text-blue-500 dark:text-blue-400 font-medium">$1</span>');
 
@@ -1441,20 +1506,22 @@
         document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('bg-blue-600', 'text-white'); el.classList.add('text-slate-400'); });
         const active = document.getElementById(`nav-${id}`); if (active) { active.classList.remove('text-slate-400'); active.classList.add('bg-blue-600', 'text-white'); }
 
-        // Button Logic
         const goalsBtn = document.getElementById('addGoalBtn');
         const recBtn = document.getElementById('addRecBtn');
         const txnBtn = document.getElementById('addTxnBtn');
         const debtBtn = document.getElementById('addDebtBtn');
+        const familyBtn = document.getElementById('addFamilyBtn');
 
         goalsBtn.classList.add('hidden');
         recBtn.classList.add('hidden');
         txnBtn.classList.add('hidden');
         debtBtn.classList.add('hidden');
+        familyBtn.classList.add('hidden');
 
         if (id === 'goals') goalsBtn.classList.remove('hidden');
         else if (id === 'recurring') recBtn.classList.remove('hidden');
         else if (id === 'debts') debtBtn.classList.remove('hidden');
+        else if (id === 'family') familyBtn.classList.remove('hidden'); 
         else if (id === 'dashboard' || id === 'transactions' || id === 'calendar') txnBtn.classList.remove('hidden');
 
         if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
@@ -1472,7 +1539,6 @@
         const bI = document.getElementById('btn-income');
         const bInv = document.getElementById('btn-investment');
 
-        // Reset classes
         const inactiveClass = "py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700";
         bE.className = inactiveClass;
         bI.className = inactiveClass;
@@ -1509,14 +1575,13 @@
         };
         const btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
         try {
-            const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses');
+            const ref = getDbRef('expenses');
             if (editId) await ref.doc(editId).update(data); else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await ref.add(data); }
             closeModal();
         } catch (e) { console.error(e); alert("Error saving"); } finally { btn.disabled = false; }
     });
-    window.deleteTransaction = async (id) => { if (!confirm("Delete?")) return; try { await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('expenses').doc(id).delete(); } catch (e) { alert("Failed"); } };
+    window.deleteTransaction = async (id) => { if (!confirm("Delete?")) return; try { await getDbRef('expenses').doc(id).delete(); } catch (e) { alert("Failed"); } };
 
-    // SAFE LISTENER HELPER
     function addListener(id, event, handler) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, handler);
